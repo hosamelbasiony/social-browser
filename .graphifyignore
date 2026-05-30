@@ -1,0 +1,24 @@
+# Exclude graphify's own bundled source
+graphify-8/
+graphify-out/
+
+# Exclude node_modules and dependencies
+node_modules/
+
+# Exclude data/backups
+social-data/
+backups/
+downloads/
+uploads/
+
+# Exclude non-code assets
+browser_files/fonts/
+browser_files/images/
+browser_files/svg/
+browser_files/css/
+browser_files/txt/
+
+# Exclude git internals
+.git/
+.claude/
+.agents/
