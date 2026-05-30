@@ -166,7 +166,40 @@ Change `maxProfiles` from `10` to `1000`:
 
 ---
 
-#### 3. Secondary enforcement points (read-only — no edits needed if above patches applied)
+#### 3. `browser_manager/core.js` — **Extension manifest key bypass** 🧩
+
+The original code validates each extension's `manifest.json` with a hash-based key check:
+
+```javascript
+// ORIGINAL — blocks extensions without a valid key
+if (!manifest.key || manifest.key !== browserManager.api.md5(browserManager.api.to123(manifest.name))) {
+    browserManager.log('loadExtension Error: Invalid Manifest', manifestPath);
+    browserManager.sendMessage({ type: '[alert]', message: 'Extension manifest is invalid' });
+    return null;
+}
+```
+
+This requires `manifest.key` to equal `md5(to123(extensionName))` — a signature only the original developer can generate using the `to123()` encoding function.
+
+**Patch**: Comment out the entire key validation block (~lines 93-97 in `loadExtension()`):
+
+```javascript
+// Bypass: invalid/empty manifest is allowed — extension will load with defaults
+
+// if (!manifest.key || manifest.key !== browserManager.api.md5(browserManager.api.to123(manifest.name))) {
+//     browserManager.log('loadExtension Error: Invalid Manifest', manifestPath);
+//     browserManager.sendMessage({ type: '[alert]', message: 'Extension manifest is invalid' });
+//     return null;
+// }
+```
+
+> **How to find in new versions**: Search for `manifest.key` or `Invalid Manifest` in `core.js`. The check is inside the `loadExtension()` function.
+
+> **Effect**: Any extension with a valid `manifest.json` (containing at least a `name` field) will load without needing a cryptographic key.
+
+---
+
+#### 4. Secondary enforcement points (read-only — no edits needed if above patches applied)
 
 These files **read** `maxProfiles` at runtime, so they are automatically fixed when the value is set to 1000:
 
@@ -178,7 +211,7 @@ These files **read** `maxProfiles` at runtime, so they are automatically fixed w
 | `browser_files/js/setting.js` | ~514 | Import profiles: blocks if `imported + existing > maxProfiles` |
 | `browser_manager/api.js` | ~171 | Local API route `/api/activated-by-online-key` — calls `onLineActivated()` (now our no-op) |
 
-> **Search terms for new versions**: `maxProfiles`, `browser.activated`, `activated-by-online-key`
+> **Search terms for new versions**: `maxProfiles`, `browser.activated`, `activated-by-online-key`, `manifest.key`
 
 ---
 
