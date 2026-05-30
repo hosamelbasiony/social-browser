@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Event Monitor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06060f;--s1:#0e0e1e;--s2:#16162a;--s3:#1e1e36;
+  --border:#252540;--text:#e0e0ff;--muted:#585880;
+  --green:#10b981;--green2:#34d399;
+  --purple:#a855f7;--purple2:#c084fc;
+  --red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;
+  --glow-g:rgba(16,185,129,.3);--glow-p:rgba(168,85,247,.3);--glow-r:rgba(239,68,68,.3);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* HEADER */
+header{
+  background:linear-gradient(135deg,#0e0e1e,#16162a);
+  border-bottom:1px solid var(--border);
+  padding:16px 28px;display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:20;
+}
+.logo{
+  width:42px;height:42px;border-radius:11px;
+  background:linear-gradient(135deg,var(--purple),var(--green));
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  box-shadow:0 0 20px var(--glow-p);
+}
+.hinfo h1{font-size:18px;font-weight:700}
+.hinfo p {font-size:12px;color:var(--muted);margin-top:2px}
+.hright{margin-left:auto;display:flex;align-items:center;gap:14px}
+
+/* STATUS PILL */
+.status-pill{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 14px;border-radius:99px;
+  font-size:12px;font-weight:600;border:1px solid;
+  transition:all .3s;
+}
+.status-pill.on {color:var(--green2);background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3)}
+.status-pill.off{color:var(--red);  background:rgba(239,68,68,.1); border-color:rgba(239,68,68,.3)}
+.status-dot{width:7px;height:7px;border-radius:50%;animation:blink .8s steps(1) infinite}
+.status-pill.on  .status-dot{background:var(--green2);box-shadow:0 0 6px var(--glow-g)}
+.status-pill.off .status-dot{background:var(--red)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* TOGGLE */
+.toggle-btn{
+  padding:7px 18px;border-radius:8px;font-size:12px;font-weight:600;
+  cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--text);
+  transition:all .2s;
+}
+.toggle-btn:hover{border-color:var(--purple);color:var(--purple2)}
+
+/* MAIN */
+main{padding:24px 28px;display:flex;flex-direction:column;gap:22px}
+
+/* STITLE */
+.stitle{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* STAT CARDS */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{
+  background:var(--s1);border:1px solid var(--border);border-radius:12px;
+  padding:16px 20px;transition:transform .2s,box-shadow .2s;
+}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-card .sc-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.stat-card .sc-val{font-size:26px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.stat-card .sc-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.sc-green .sc-val{color:var(--green2)} .sc-green:hover{box-shadow:0 6px 20px var(--glow-g)}
+.sc-purple .sc-val{color:var(--purple2)} .sc-purple:hover{box-shadow:0 6px 20px var(--glow-p)}
+.sc-red .sc-val{color:var(--red)} .sc-red:hover{box-shadow:0 6px 20px var(--glow-r)}
+.sc-amber .sc-val{color:var(--amber)}
+
+/* LAST EVENT BANNER */
+.last-event{
+  background:var(--s1);border:1px solid var(--border);border-radius:14px;
+  padding:18px 22px;display:flex;align-items:center;gap:16px;
+}
+.le-icon{font-size:28px}
+.le-info .le-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.le-info .le-title{font-size:18px;font-weight:700;color:var(--purple2);margin:4px 0}
+.le-info .le-meta {font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.le-none{color:var(--muted);font-style:italic;font-size:14px}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 340px;gap:20px}
+
+/* EVENT LOG */
+.log-panel{background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.log-header{background:var(--s2);padding:12px 18px;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.log-body{max-height:320px;overflow-y:auto}
+.log-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 18px;border-bottom:1px solid var(--border);
+  transition:background .15s;
+}
+.log-item:hover{background:var(--s2)}
+.log-item:last-child{border:none}
+.li-icon{font-size:16px;margin-top:1px}
+.li-body{flex:1}
+.li-title{font-size:13px;font-weight:500}
+.li-meta{font-size:10px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.li-badge{
+  font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;
+  flex-shrink:0;margin-top:2px;
+}
+.li-badge.ok {background:rgba(16,185,129,.15);color:var(--green2);border:1px solid rgba(16,185,129,.3)}
+.li-badge.err{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.log-empty{padding:28px;text-align:center;color:var(--muted);font-size:13px}
+
+/* CONFIG PANEL */
+.cfg-panel{background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.cfg-header{background:var(--s2);padding:12px 18px;font-size:12px;font-weight:600;border-bottom:1px solid var(--border)}
+.cfg-body{padding:18px}
+.form-row{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-row label{font-size:11px;color:var(--muted);font-weight:500}
+.form-row input,.form-row textarea{
+  background:var(--s3);border:1px solid var(--border);color:var(--text);
+  border-radius:7px;padding:8px 12px;font-size:12px;
+  font-family:'JetBrains Mono',monospace;outline:none;transition:border-color .2s;
+}
+.form-row input:focus,.form-row textarea:focus{border-color:var(--purple)}
+.form-row textarea{resize:vertical;min-height:60px}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;
+  cursor:pointer;border:none;transition:all .2s;width:100%;
+}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;margin-bottom:8px}
+.btn-primary:hover{box-shadow:0 4px 16px var(--glow-p);transform:translateY(-1px)}
+.btn-test{background:var(--s3);color:var(--green2);border:1px solid rgba(16,185,129,.3)}
+.btn-test:hover{background:rgba(16,185,129,.1);box-shadow:0 4px 14px var(--glow-g)}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:22px;right:22px;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:10px;padding:11px 18px;font-size:13px;
+  display:flex;align-items:center;gap:9px;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:999;
+  transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);
+}
+#toast.show{transform:none;opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔔</div>
+  <div class="hinfo">
+    <h1>Event Monitor</h1>
+    <p>Telegram Alert Extension</p>
+  </div>
+  <div class="hright">
+    <div class="status-pill on" id="status-pill">
+      <span class="status-dot"></span>
+      <span id="status-text">Monitoring</span>
+    </div>
+    <button class="toggle-btn" id="toggle-btn" onclick="toggleMonitor()">Pause</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Stats -->
+  <div>
+    <div class="stitle">Statistics</div>
+    <div class="stat-row">
+      <div class="stat-card sc-green">
+        <div class="sc-label">Alerts Sent</div>
+        <div class="sc-val" id="stat-sent">0</div>
+        <div class="sc-sub">To Telegram</div>
+      </div>
+      <div class="stat-card sc-red">
+        <div class="sc-label">Failures</div>
+        <div class="sc-val" id="stat-fail">0</div>
+        <div class="sc-sub">Network / API errors</div>
+      </div>
+      <div class="stat-card sc-purple">
+        <div class="sc-label">Targets</div>
+        <div class="sc-val" id="stat-targets">1</div>
+        <div class="sc-sub">URLs monitored</div>
+      </div>
+      <div class="stat-card sc-amber">
+        <div class="sc-label">Last Check</div>
+        <div class="sc-val" id="stat-time" style="font-size:15px;margin-top:4px">--:--</div>
+        <div class="sc-sub">Updated live</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Last event -->
+  <div>
+    <div class="stitle">Last Detected Event</div>
+    <div class="last-event" id="last-event-box">
+      <div class="le-icon">📭</div>
+      <div class="le-info">
+        <div class="le-label">Waiting for event...</div>
+        <div class="le-title le-none">No events detected yet</div>
+        <div class="le-meta" id="last-event-meta"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log + Config -->
+  <div class="two-col">
+
+    <!-- Event History -->
+    <div>
+      <div class="stitle">Event History</div>
+      <div class="log-panel">
+        <div class="log-header">
+          <span>Recent Alerts</span>
+          <span id="log-count" style="color:var(--muted);font-weight:400">0 events</span>
+        </div>
+        <div class="log-body" id="log-body">
+          <div class="log-empty">No events captured yet.<br>Browse to your target URL to start monitoring.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Config -->
+    <div>
+      <div class="stitle">Configuration</div>
+      <div class="cfg-panel">
+        <div class="cfg-header">⚙️ Telegram & Targets</div>
+        <div class="cfg-body">
+          <div class="form-row">
+            <label>Bot Token</label>
+            <input type="password" id="cfg-token" placeholder="1234567890:AAF..." />
+          </div>
+          <div class="form-row">
+            <label>Chat ID</label>
+            <input type="text" id="cfg-chatid" placeholder="1532415580" />
+          </div>
+          <div class="form-row">
+            <label>Target URLs (one per line)</label>
+            <textarea id="cfg-targets" rows="3"></textarea>
+          </div>
+          <div class="form-row">
+            <label>Card Selector</label>
+            <input type="text" id="cfg-selector" placeholder=".event-card" />
+          </div>
+          <div class="form-row">
+            <label>Title Selector</label>
+            <input type="text" id="cfg-titsel" placeholder=".event-title" />
+          </div>
+          <div class="form-row">
+            <label>Date Selector</label>
+            <input type="text" id="cfg-datsel" placeholder=".event-date" />
+          </div>
+          <button class="btn btn-primary" onclick="saveConfig()">💾 Save Configuration</button>
+          <button class="btn btn-test"    onclick="sendTest()">📨 Send Test Message</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<div id="toast">
+  <span id="toast-icon">✅</span>
+  <span id="toast-msg">Done</span>
+</div>
+
+<script>
+// ── Toast ──────────────────────────────────────────────────────────────────
+let toastT;
+function toast(msg, icon='✅') {
+  const el = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent  = msg;
+  document.getElementById('toast-icon').textContent = icon;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ── Format ─────────────────────────────────────────────────────────────────
+function fmtTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleTimeString();
+}
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ── Poll status ────────────────────────────────────────────────────────────
+let monitorEnabled = true;
+
+async function refresh() {
+  try {
+    const res   = await fetch('http://127.0.0.1:60080/extentions/event-monitor/status');
+    const state = await res.json();
+
+    monitorEnabled = state.enabled;
+
+    // Status pill
+    const pill = document.getElementById('status-pill');
+    const btn  = document.getElementById('toggle-btn');
+    pill.className = 'status-pill ' + (state.enabled ? 'on' : 'off');
+    document.getElementById('status-text').textContent = state.enabled ? 'Monitoring' : 'Paused';
+    btn.textContent = state.enabled ? 'Pause' : 'Resume';
+
+    // Stats
+    document.getElementById('stat-sent').textContent    = state.totalSent;
+    document.getElementById('stat-fail').textContent    = state.failCount;
+    document.getElementById('stat-targets').textContent = state.config.targets.length;
+    document.getElementById('stat-time').textContent    = new Date().toLocaleTimeString();
+
+    // Last event banner
+    const lb = document.getElementById('last-event-box');
+    if (state.lastEvent) {
+      lb.innerHTML = `
+        <div class="le-icon">📬</div>
+        <div class="le-info">
+          <div class="le-label">Last Detected</div>
+          <div class="le-title">${esc(state.lastEvent)}</div>
+          <div class="le-meta" id="last-event-meta">Sent at ${fmtTime(state.lastSeenAt)}</div>
+        </div>`;
+    }
+
+    // Config fields (only set once)
+    if (!document.getElementById('cfg-token').dataset.loaded) {
+      document.getElementById('cfg-token').value    = state.config.botToken;
+      document.getElementById('cfg-chatid').value   = state.config.chatId;
+      document.getElementById('cfg-targets').value  = state.config.targets.join('\n');
+      document.getElementById('cfg-selector').value = state.config.selector;
+      document.getElementById('cfg-titsel').value   = state.config.titleSel;
+      document.getElementById('cfg-datsel').value   = state.config.dateSel;
+      document.getElementById('cfg-token').dataset.loaded = '1';
+    }
+
+    // Event log
+    const logBody = document.getElementById('log-body');
+    document.getElementById('log-count').textContent = state.eventHistory.length + ' events';
+    if (state.eventHistory.length === 0) {
+      logBody.innerHTML = '<div class="log-empty">No events captured yet.<br>Browse to your target URL to start monitoring.</div>';
+    } else {
+      logBody.innerHTML = state.eventHistory.map(ev => `
+        <div class="log-item">
+          <div class="li-icon">${ev.ok ? '✅' : '❌'}</div>
+          <div class="li-body">
+            <div class="li-title">${esc(ev.title)}</div>
+            <div class="li-meta">${fmtTime(ev.sentAt)} · ${esc(ev.date || '—')}</div>
+            ${ev.err ? `<div class="li-meta" style="color:var(--red)">${esc(ev.err)}</div>` : ''}
+          </div>
+          <span class="li-badge ${ev.ok ? 'ok' : 'err'}">${ev.ok ? 'Sent' : 'Failed'}</span>
+        </div>`).join('');
+    }
+  } catch(e) {
+    document.getElementById('stat-time').textContent = 'ERR';
+  }
+}
+
+// ── Toggle ─────────────────────────────────────────────────────────────────
+async function toggleMonitor() {
+  await fetch('http://127.0.0.1:60080/extentions/event-monitor/config', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ enabled: !monitorEnabled }),
+  });
+  toast(monitorEnabled ? '⏸ Monitor paused' : '▶ Monitor resumed', monitorEnabled ? '⏸' : '▶');
+  refresh();
+}
+
+// ── Save config ────────────────────────────────────────────────────────────
+async function saveConfig() {
+  const targets = document.getElementById('cfg-targets').value
+    .split('\n').map(s => s.trim()).filter(Boolean);
+
+  const res = await fetch('http://127.0.0.1:60080/extentions/event-monitor/config', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      botToken:  document.getElementById('cfg-token').value.trim(),
+      chatId:    document.getElementById('cfg-chatid').value.trim(),
+      targets,
+      selector:  document.getElementById('cfg-selector').value.trim(),
+      titleSel:  document.getElementById('cfg-titsel').value.trim(),
+      dateSel:   document.getElementById('cfg-datsel').value.trim(),
+    }),
+  });
+  const data = await res.json();
+  toast(data.ok ? '✅ Config saved!' : '❌ Save failed', data.ok ? '✅' : '❌');
+}
+
+// ── Test message ───────────────────────────────────────────────────────────
+async function sendTest() {
+  toast('Sending test...', '📨');
+  const res  = await fetch('http://127.0.0.1:60080/extentions/event-monitor/test', { method: 'POST' });
+  const data = await res.json();
+  toast(data.ok ? '✅ Test message sent to Telegram!' : '❌ Failed: ' + data.reason, data.ok ? '✅' : '❌');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

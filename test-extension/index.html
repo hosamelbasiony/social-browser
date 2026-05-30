@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TikTok Tool Manager</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c26;
+      --border: #2a2a3a;
+      --accent: #fe2c55;
+      --accent2: #25f4ee;
+      --text: #f0f0f5;
+      --muted: #7a7a9a;
+      --success: #00d68f;
+      --warning: #ffaa00;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 18px rgba(254,44,85,.4);
+    }
+    header h1 { font-size: 18px; font-weight: 700; letter-spacing: .3px; }
+    header p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .badge {
+      margin-left: auto;
+      background: linear-gradient(135deg, var(--accent), #ff6b6b);
+      color: #fff;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 20px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+
+    /* ── Layout ── */
+    .layout { display: flex; flex: 1; height: calc(100vh - 73px); overflow: hidden; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 200px; min-width: 200px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 16px 10px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; color: var(--muted);
+      transition: all .2s;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover  { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: rgba(254,44,85,.12); color: var(--accent); }
+    .nav-item .icon  { font-size: 16px; width: 20px; text-align: center; }
+
+    /* ── Main ── */
+    main { flex: 1; overflow-y: auto; padding: 24px 28px; }
+
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 11px; font-weight: 600; letter-spacing: 1.2px;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 14px;
+    }
+
+    /* ── Stat cards ── */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 20px;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,.4); }
+    .card .label { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+    .card .value { font-size: 26px; font-weight: 700; }
+    .card .sub   { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .card.red  .value { color: var(--accent); }
+    .card.teal .value { color: var(--accent2); }
+    .card.green .value { color: var(--success); }
+    .card.orange .value { color: var(--warning); }
+
+    /* ── Action buttons ── */
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: none; transition: all .2s;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), #ff6b6b); color: #fff; }
+    .btn-primary:hover { box-shadow: 0 4px 18px rgba(254,44,85,.45); transform: translateY(-1px); }
+    .btn-teal { background: linear-gradient(135deg, var(--accent2), #00b8b4); color: #000; }
+    .btn-teal:hover { box-shadow: 0 4px 18px rgba(37,244,238,.35); transform: translateY(-1px); }
+    .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Table ── */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--surface2); padding: 11px 16px;
+      text-align: left; font-size: 11px; font-weight: 600;
+      color: var(--muted); letter-spacing: .5px; text-transform: uppercase;
+    }
+    tbody tr { border-top: 1px solid var(--border); transition: background .15s; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 12px 16px; }
+    .status-dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      margin-right: 6px; vertical-align: middle;
+    }
+    .dot-green { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .dot-red   { background: var(--accent);  box-shadow: 0 0 6px var(--accent); }
+    .dot-gray  { background: var(--muted); }
+
+    /* ── Log box ── */
+    .log-box {
+      background: #080810; border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 16px; font-family: monospace; font-size: 12px;
+      color: #a0ffa0; max-height: 220px; overflow-y: auto; line-height: 1.7;
+    }
+    .log-box .log-err  { color: #ff6b6b; }
+    .log-box .log-warn { color: var(--warning); }
+    .log-box .log-info { color: var(--accent2); }
+
+    /* ── Input ── */
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-row label { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .form-row input, .form-row select, .form-row textarea {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 9px 13px;
+      font-size: 13px; font-family: inherit; outline: none;
+      transition: border-color .2s;
+    }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+      border-color: var(--accent);
+    }
+    .form-row textarea { resize: vertical; min-height: 80px; }
+
+    /* ── Progress bar ── */
+    .progress-wrap { background: var(--surface2); border-radius: 999px; height: 6px; margin-top: 4px; overflow: hidden; }
+    .progress-bar  { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .4s; }
+
+    /* ── Toggle ── */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .toggle-row:last-child { border: none; }
+    .toggle-info .t-label { font-size: 13px; font-weight: 500; }
+    .toggle-info .t-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .toggle {
+      position: relative; width: 40px; height: 22px; cursor: pointer;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0; border-radius: 99px;
+      background: var(--surface2); border: 1px solid var(--border); transition: .3s;
+    }
+    .slider::before {
+      content: ''; position: absolute; left: 3px; top: 3px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--muted); transition: .3s;
+    }
+    .toggle input:checked + .slider { background: rgba(254,44,85,.2); border-color: var(--accent); }
+    .toggle input:checked + .slider::before { background: var(--accent); transform: translateX(18px); }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 20px;
+      font-size: 13px; display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      transform: translateY(80px); opacity: 0;
+      transition: all .3s cubic-bezier(.34,1.56,.64,1);
+      z-index: 999;
+    }
+    #toast.show { transform: none; opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎵</div>
+  <div>
+    <h1>TikTok Tool Manager</h1>
+    <p>Extension v1.0.0 — Browser Manager</p>
+  </div>
+  <span class="badge">● LIVE</span>
+</header>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <button class="nav-item active" onclick="showPage('dashboard', this)">
+      <span class="icon">📊</span> Dashboard
+    </button>
+    <button class="nav-item" onclick="showPage('accounts', this)">
+      <span class="icon">👤</span> Accounts
+    </button>
+    <button class="nav-item" onclick="showPage('scraper', this)">
+      <span class="icon">🔍</span> Scraper
+    </button>
+    <button class="nav-item" onclick="showPage('automation', this)">
+      <span class="icon">🤖</span> Automation
+    </button>
+    <button class="nav-item" onclick="showPage('settings', this)">
+      <span class="icon">⚙️</span> Settings
+    </button>
+  </nav>
+
+  <!-- Main content -->
+  <main>
+
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <p class="section-title">Overview</p>
+      <div class="cards">
+        <div class="card red">
+          <div class="label">Active Accounts</div>
+          <div class="value" id="stat-accounts">3</div>
+          <div class="sub">↑ 1 added today</div>
+        </div>
+        <div class="card teal">
+          <div class="label">Profiles Scraped</div>
+          <div class="value" id="stat-scraped">142</div>
+          <div class="sub">Last run: 2 min ago</div>
+        </div>
+        <div class="card green">
+          <div class="label">Actions Done</div>
+          <div class="value" id="stat-actions">87</div>
+          <div class="sub">Likes · Follows · Comments</div>
+        </div>
+        <div class="card orange">
+          <div class="label">Errors</div>
+          <div class="value" id="stat-errors">2</div>
+          <div class="sub">Last 24 h</div>
+        </div>
+      </div>
+
+      <p class="section-title">Quick Actions</p>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="runQuickScrape()">▶ Quick Scrape</button>
+        <button class="btn btn-teal"    onclick="runAutoFollow()">⚡ Auto Follow</button>
+        <button class="btn btn-ghost"   onclick="showPage('accounts', document.querySelector('[onclick*=accounts]'))">+ Add Account</button>
+      </div>
+
+      <p class="section-title">Activity Log</p>
+      <div class="log-box" id="log-box">
+        <div class="log-info">[INFO] Extension initialized successfully.</div>
+        <div>[OK]   Loaded 3 accounts from storage.</div>
+        <div>[OK]   Route /extentions/tiktok registered.</div>
+      </div>
+    </div>
+
+    <!-- Accounts -->
+    <div class="page" id="page-accounts">
+      <p class="section-title">Manage Accounts</p>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="addAccount()">+ Add Account</button>
+        <button class="btn btn-ghost"   onclick="refreshAccounts()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Status</th>
+              <th>Followers</th>
+              <th>Last Used</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="accounts-table">
+            <tr>
+              <td>@creator_one</td>
+              <td><span class="status-dot dot-green"></span>Active</td>
+              <td>12,400</td>
+              <td>Just now</td>
+              <td><button class="btn btn-ghost" style="padding:4px 12px;font-size:12px" onclick="toast('Switched to @creator_one')">Use</button></td>
+            </tr>
+            <tr>
+              <td>@tester_99</td>
+              <td><span class="status-dot dot-green"></span>Active</td>
+              <td>3,200</td>
+              <td>5 min ago</td>
+              <td><button class="btn btn-ghost" style="padding:4px 12px;font-size:12px" onclick="toast('Switched to @tester_99')">Use</button></td>
+            </tr>
+            <tr>
+              <td>@demo_acc</td>
+              <td><span class="status-dot dot-red"></span>Suspended</td>
+              <td>870</td>
+              <td>2 days ago</td>
+              <td><button class="btn btn-ghost" style="padding:4px 12px;font-size:12px" onclick="toast('Account is suspended!')">Use</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Scraper -->
+    <div class="page" id="page-scraper">
+      <p class="section-title">Profile Scraper</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
+        <div class="form-row">
+          <label>Target Hashtag or Username</label>
+          <input type="text" id="scrape-target" placeholder="#trending  or  @username" />
+        </div>
+        <div class="form-row">
+          <label>Max Results</label>
+          <input type="number" id="scrape-limit" value="50" min="1" max="500" />
+        </div>
+        <div class="form-row">
+          <label>Data to Collect</label>
+          <select id="scrape-type">
+            <option>Profiles (followers, bio, links)</option>
+            <option>Videos (views, likes, shares)</option>
+            <option>Comments</option>
+            <option>Trending sounds</option>
+          </select>
+        </div>
+        <div class="actions" style="margin-bottom:0">
+          <button class="btn btn-primary" onclick="startScrape()">▶ Start Scraping</button>
+          <button class="btn btn-ghost"   onclick="stopScrape()">⏹ Stop</button>
+        </div>
+      </div>
+
+      <p class="section-title">Progress</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px">
+          <span id="scrape-status-text">Idle</span>
+          <span id="scrape-pct">0%</span>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" id="scrape-bar" style="width:0%"></div></div>
+        <div class="log-box" id="scrape-log" style="margin-top:14px;max-height:160px">
+          <div class="log-info">[INFO] Ready to scrape. Enter a target above.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Automation -->
+    <div class="page" id="page-automation">
+      <p class="section-title">Automation Settings</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px 20px;margin-bottom:20px">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="t-label">Auto Like</div>
+            <div class="t-desc">Like videos matching your target hashtag</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked onchange="toast('Auto Like: ' + (this.checked?'ON':'OFF'))"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="t-label">Auto Follow</div>
+            <div class="t-desc">Follow users from scraped profile list</div>
+          </div>
+          <label class="toggle"><input type="checkbox" onchange="toast('Auto Follow: ' + (this.checked?'ON':'OFF'))"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="t-label">Auto Comment</div>
+            <div class="t-desc">Post comments from a custom template</div>
+          </div>
+          <label class="toggle"><input type="checkbox" onchange="toast('Auto Comment: ' + (this.checked?'ON':'OFF'))"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="t-label">Human-like Delays</div>
+            <div class="t-desc">Randomize action timing to avoid detection</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked onchange="toast('Human Delays: ' + (this.checked?'ON':'OFF'))"><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <p class="section-title">Comment Templates</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
+        <div class="form-row">
+          <label>Templates (one per line)</label>
+          <textarea id="comment-templates">Amazing content! 🔥
+Love this! ❤️
+Keep it up! 💪
+So creative! ✨</textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveTemplates()">Save Templates</button>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="page" id="page-settings">
+      <p class="section-title">Extension Settings</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
+        <div class="form-row">
+          <label>Extension Name</label>
+          <input type="text" value="TikTok Tool Manager" />
+        </div>
+        <div class="form-row">
+          <label>API Delay (ms between actions)</label>
+          <input type="number" value="1500" min="500" max="10000" />
+        </div>
+        <div class="form-row">
+          <label>Data Storage Path</label>
+          <input type="text" value="./social-data/tiktok" />
+        </div>
+        <button class="btn btn-primary" onclick="toast('✅ Settings saved!')">Save Settings</button>
+      </div>
+
+      <p class="section-title">Danger Zone</p>
+      <div style="background:var(--surface);border:1px solid rgba(254,44,85,.3);border-radius:12px;padding:20px">
+        <div class="actions" style="margin-bottom:0">
+          <button class="btn btn-ghost" onclick="clearData()" style="border-color:var(--accent);color:var(--accent)">🗑 Clear All Data</button>
+          <button class="btn btn-ghost" onclick="resetExtension()" style="border-color:var(--muted)">↺ Reset Extension</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Toast -->
+<div id="toast">
+  <span id="toast-icon">✅</span>
+  <span id="toast-msg">Done!</span>
+</div>
+
+<script>
+  // ── Navigation ──────────────────────────────────────────────────
+  function showPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+
+  // ── Toast ────────────────────────────────────────────────────────
+  let toastTimer;
+  function toast(msg, icon = '✅') {
+    const el = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    document.getElementById('toast-icon').textContent = icon;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  // ── Log helper ───────────────────────────────────────────────────
+  function appendLog(boxId, msg, type = '') {
+    const box = document.getElementById(boxId);
+    const line = document.createElement('div');
+    if (type) line.className = 'log-' + type;
+    line.textContent = msg;
+    box.appendChild(line);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // ── Dashboard actions ────────────────────────────────────────────
+  function runQuickScrape() {
+    toast('🔍 Quick scrape started…');
+    appendLog('log-box', '[START] Quick scrape triggered.', 'info');
+    let n = 0;
+    const tick = setInterval(() => {
+      n++;
+      appendLog('log-box', `[SCRAPE] Fetched profile #${n}`);
+      const cur = parseInt(document.getElementById('stat-scraped').textContent.replace(',',''));
+      document.getElementById('stat-scraped').textContent = (cur + 1).toLocaleString();
+      if (n >= 5) {
+        clearInterval(tick);
+        appendLog('log-box', '[DONE] Quick scrape complete.', 'info');
+        toast('✅ Scraped 5 profiles!');
+      }
+    }, 600);
+  }
+
+  function runAutoFollow() {
+    toast('⚡ Auto-follow started…', '⚡');
+    appendLog('log-box', '[AUTO] Auto-follow sequence started.', 'info');
+    let n = 0;
+    const tick = setInterval(() => {
+      n++;
+      appendLog('log-box', `[FOLLOW] Followed user_${Math.random().toString(36).slice(2,8)}`);
+      const cur = parseInt(document.getElementById('stat-actions').textContent);
+      document.getElementById('stat-actions').textContent = cur + 1;
+      if (n >= 3) {
+        clearInterval(tick);
+        appendLog('log-box', '[DONE] Auto-follow complete.', 'info');
+        toast('✅ Followed 3 accounts!');
+      }
+    }, 700);
+  }
+
+  // ── Accounts ─────────────────────────────────────────────────────
+  function addAccount() {
+    const user = prompt('Enter TikTok username (with @):');
+    if (!user) return;
+    const tbody = document.getElementById('accounts-table');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${user.startsWith('@') ? user : '@' + user}</td>
+      <td><span class="status-dot dot-green"></span>Active</td>
+      <td>0</td>
+      <td>Just now</td>
+      <td><button class="btn btn-ghost" style="padding:4px 12px;font-size:12px" onclick="toast('Switched to ${user}')">Use</button></td>
+    `;
+    tbody.appendChild(tr);
+    const cur = parseInt(document.getElementById('stat-accounts').textContent);
+    document.getElementById('stat-accounts').textContent = cur + 1;
+    toast('✅ Account added: ' + user);
+    appendLog('log-box', `[ACCOUNT] Added ${user}`);
+  }
+
+  function refreshAccounts() {
+    toast('↻ Accounts refreshed');
+    appendLog('log-box', '[INFO] Account list refreshed.', 'info');
+  }
+
+  // ── Scraper ───────────────────────────────────────────────────────
+  let scrapeRunning = false;
+  let scrapeInterval;
+
+  function startScrape() {
+    if (scrapeRunning) return;
+    const target = document.getElementById('scrape-target').value.trim();
+    const limit  = parseInt(document.getElementById('scrape-limit').value) || 50;
+    if (!target) { toast('❗ Enter a target first!', '❗'); return; }
+
+    scrapeRunning = true;
+    let done = 0;
+    document.getElementById('scrape-status-text').textContent = `Scraping ${target}…`;
+    appendLog('scrape-log', `[START] Targeting: ${target} | Limit: ${limit}`, 'info');
+
+    scrapeInterval = setInterval(() => {
+      done++;
+      const pct = Math.min(Math.round((done / limit) * 100), 100);
+      document.getElementById('scrape-bar').style.width = pct + '%';
+      document.getElementById('scrape-pct').textContent = pct + '%';
+      appendLog('scrape-log', `[SCRAPE] Result #${done}: user_${Math.random().toString(36).slice(2,8)}`);
+      const cur = parseInt(document.getElementById('stat-scraped').textContent.replace(',',''));
+      document.getElementById('stat-scraped').textContent = (cur + 1).toLocaleString();
+
+      if (done >= limit) stopScrape(true);
+    }, 200);
+  }
+
+  function stopScrape(done = false) {
+    clearInterval(scrapeInterval);
+    scrapeRunning = false;
+    document.getElementById('scrape-status-text').textContent = done ? 'Complete ✅' : 'Stopped';
+    if (!done) {
+      document.getElementById('scrape-bar').style.background = 'var(--warning)';
+      appendLog('scrape-log', '[STOP] Scrape stopped by user.', 'warn');
+      toast('⏹ Scrape stopped', '⏹');
+    } else {
+      appendLog('scrape-log', '[DONE] Scrape complete!', 'info');
+      toast('✅ Scrape complete!');
+    }
+  }
+
+  // ── Settings ──────────────────────────────────────────────────────
+  function saveTemplates() {
+    toast('✅ Templates saved!');
+  }
+
+  function clearData() {
+    if (confirm('Clear all scraped data? This cannot be undone.')) {
+      document.getElementById('stat-scraped').textContent = '0';
+      document.getElementById('stat-actions').textContent = '0';
+      appendLog('log-box', '[WARN] All data cleared.', 'warn');
+      toast('🗑 Data cleared', '🗑');
+    }
+  }
+
+  function resetExtension() {
+    if (confirm('Reset extension to defaults?')) {
+      toast('↺ Extension reset');
+      appendLog('log-box', '[WARN] Extension reset to defaults.', 'warn');
+    }
+  }
+</script>
+</body>
+</html>

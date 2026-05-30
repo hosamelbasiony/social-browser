@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Window Prompt</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                box-sizing: border-box;
+                background: #1e1e1e;
+            }
+
+            .social-prompt-box {
+                background: transparent;
+                color: #fff;
+                padding: 25px;
+                font-family: Arial, sans-serif;
+            }
+
+            .social-prompt-title {
+                font-size: 16px;
+                margin-bottom: 12px;
+                opacity: 0.9;
+            }
+
+            .social-prompt-input {
+                width: 100%;
+                padding: 10px;
+                border-radius: 8px;
+                border: none;
+                outline: none;
+                margin-bottom: 15px;
+                background: #2c2c2c;
+                color: #fff;
+            }
+
+            .social-prompt-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+
+            .social-prompt-btn {
+                padding: 8px 14px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+
+            .social-prompt-ok {
+                background: #4caf50;
+                color: white;
+            }
+
+            .social-prompt-cancel {
+                background: #444;
+                color: #ddd;
+            }
+            h2 {
+                text-align: center;
+            }
+            body {
+                background: radial-gradient(circle at top left, rgba(33, 168, 255, 0.12), transparent 36%), #07111f;
+            }
+            .social-prompt-box {
+                background: rgba(13, 27, 46, 0.88);
+                border: 1px solid #244664;
+                border-radius: 12px;
+                box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+                animation: social-dialog-enter 0.2s ease both;
+            }
+            .social-prompt-input {
+                background: #0a1727;
+                border: 1px solid #244664;
+            }
+            .social-prompt-btn {
+                transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+            }
+            .social-prompt-btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+            }
+            .social-prompt-ok {
+                background: linear-gradient(180deg, rgba(33, 168, 255, 0.14), rgba(16, 36, 58, 0.12)), #1a3350;
+                border: 1px solid #2c5877;
+            }
+            .social-prompt-cancel {
+                background: #0d1b2e;
+                color: #b8c7d9;
+                border: 1px solid #244664;
+            }
+            @keyframes social-dialog-enter {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px) scale(0.98);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="social-prompt-box">
+            <h2></h2>
+            <div class="social-prompt-title"></div>
+            <input class="social-prompt-input" />
+            <div class="social-prompt-actions">
+                <button class="social-prompt-btn social-prompt-cancel">Cancel</button>
+                <button class="social-prompt-btn social-prompt-ok">OK</button>
+            </div>
+        </div>
+
+        <script>
+            var _____ = globalThis.this;
+            
+            const site = document.querySelector('h2');
+            const title = document.querySelector('.social-prompt-title');
+            const input = document.querySelector('.social-prompt-input');
+            const ok = document.querySelector('.social-prompt-ok');
+            const cancel = document.querySelector('.social-prompt-cancel');
+            input.focus();
+
+            site.innerHTML = _____.customSetting.data.domain || '';
+            title.textContent = _____.customSetting.data.message || '';
+            input.value = _____.customSetting.data.defaultValue || '';
+
+            ok.onclick = () => {
+                const value = input.value;
+                _____.ipcSync('prompt-response', value);
+                window.close();
+            };
+
+            cancel.onclick = () => {
+                _____.ipcSync('prompt-response', null);
+                window.close();
+            };
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') ok.click();
+                else if (e.key === 'Escape') cancel.click();
+            });
+        </script>
+    </body>
+</html>

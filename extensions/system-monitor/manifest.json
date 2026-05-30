@@ -1,0 +1,7 @@
+{
+  "id": "__SystemMonitor",
+  "name": "System Monitor",
+  "description": "Live CPU, RAM, and browser process stats dashboard",
+  "version": "1.0.0",
+  "canDelete": false
+}

@@ -1,0 +1,11 @@
+[
+    {
+        "id": "__core",
+        "path": "{dir}/extensions/core",
+        "name": "Core Functions ",
+        "description": "Video Embed & Events , Iframe Handling ",
+        "paid": false,
+        "canDelete": false,
+        "isEnabled": true
+    }
+]

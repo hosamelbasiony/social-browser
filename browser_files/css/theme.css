@@ -1,0 +1,209 @@
+:root {
+  --float: right;
+  --direction: rtl;
+  --social-page-bg: #07111f;
+  --social-surface: #0d1b2e;
+  --social-surface-2: #12243a;
+  --social-surface-3: #1a3350;
+  --social-border: #244664;
+  --social-text: #f6f9ff;
+  --social-muted: #b8c7d9;
+  --social-accent: #21a8ff;
+  --social-accent-2: #10d7c4;
+  --social-warning: #f5c84b;
+  --social-danger: #ef4444;
+  --social-button-bg: #1a3350;
+  --social-button-bg-hover: #214465;
+  --social-button-bg-active: #10243a;
+  --social-button-border: #2c5877;
+  --social-button-danger-bg: #7f1d1d;
+  --social-button-danger-hover: #991b1b;
+  --social-button-success-bg: #0f766e;
+  --social-button-success-hover: #0d9488;
+  --social-icon: rgba(148, 183, 214, 0.72);
+  --social-icon-muted: rgba(120, 147, 173, 0.5);
+  --social-icon-hover: rgba(174, 223, 255, 0.92);
+  --social-glow: 0 0 0 1px rgba(33, 168, 255, 0.22), 0 16px 44px rgba(0, 0, 0, 0.38);
+  --color: var(--social-text);
+  --background-color: var(--social-page-bg);
+  --box-shadow-color: #020712;
+  --navbar-color: var(--social-text);
+  --navbar-background-color: var(--social-surface);
+  --navbar-box-shadow-color: #020712;
+  --modal-color: var(--social-text);
+  --modal-header-color: var(--social-text);
+  --modal-footer-color: var(--social-muted);
+  --modal-background-color: var(--social-surface);
+  --modal-header-background-color: var(--social-surface-2);
+  --modal-footer-background-color: #091525;
+  --modal-box-shadow-color: #020712;
+  --body-color: var(--social-text);
+  --body-background-color: var(--social-page-bg);
+  --body-border: 1px solid var(--social-border);
+  --table-color: var(--social-text);
+  --table-background-color: var(--social-surface);
+  --table-border: 1px solid var(--social-border);
+  --footer-color: var(--social-muted);
+  --footer-background-color: #06101d;
+  --btn-color: var(--social-text);
+  --btn-background-color: var(--social-button-bg);
+  --btn-box-shadow-color: #020712;
+  --input-color: var(--social-text);
+  --input-background-color: #0a1727;
+  --input-border: 1px solid var(--social-border);
+  --input-box-shadow-color: var(--social-accent);
+}
+
+html,
+body {
+  background: radial-gradient(circle at top left, rgba(33, 168, 255, 0.12), transparent 34%), var(--social-page-bg);
+  color: var(--social-text);
+}
+
+i,
+svg {
+  color: var(--social-icon);
+  text-shadow: 0 1px 10px rgba(33, 168, 255, 0.16);
+}
+
+a,
+button,
+.btn,
+i-button button,
+.window-actions a,
+.social-address-bar a {
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+button:hover,
+.btn:hover,
+i-button:hover,
+.window-actions a:not(.space):hover,
+.social-address-bar a:not(.space):hover {
+  color: var(--social-icon-hover) !important;
+  transform: translateY(-1px);
+}
+
+button,
+.btn,
+a.btn,
+span.btn,
+i-button button,
+input[type='button'],
+input[type='submit'],
+input[type='reset'],
+.ui.button,
+.ui.buttons .button,
+.btn-light,
+.btn-info,
+.btn-stop,
+.btn-save,
+.downloads .btn,
+contents #searchDiv button,
+#button1 {
+  color: var(--social-text) !important;
+  background: linear-gradient(180deg, rgba(33, 168, 255, 0.14), rgba(16, 36, 58, 0.12)), var(--social-button-bg) !important;
+  border: 1px solid var(--social-button-border) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+button:hover,
+.btn:hover,
+a.btn:hover,
+span.btn:hover,
+i-button button:hover,
+i-button:hover button,
+input[type='button']:hover,
+input[type='submit']:hover,
+input[type='reset']:hover,
+.ui.button:hover,
+.ui.buttons .button:hover,
+.btn-light:hover,
+.btn-info:hover,
+.btn-stop:hover,
+.btn-save:hover,
+.downloads .btn:hover,
+contents #searchDiv button:hover,
+#button1:hover {
+  color: #ffffff !important;
+  background: linear-gradient(180deg, rgba(33, 168, 255, 0.22), rgba(16, 215, 196, 0.08)), var(--social-button-bg-hover) !important;
+  border-color: var(--social-accent) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38), 0 0 0 3px rgba(33, 168, 255, 0.12) !important;
+}
+
+button:active,
+.btn:active,
+a.btn:active,
+span.btn:active,
+i-button button:active,
+input[type='button']:active,
+input[type='submit']:active,
+input[type='reset']:active,
+.ui.button:active {
+  background: var(--social-button-bg-active) !important;
+  transform: translateY(0);
+}
+
+.btn-danger,
+.bg-red,
+i-button[type='delete'] button,
+i-button[type='cancel'] button,
+.ui.red.button,
+.ui.negative.button {
+  color: #ffffff !important;
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.16), rgba(127, 29, 29, 0.08)), var(--social-button-danger-bg) !important;
+  border-color: #ef4444 !important;
+}
+
+.btn-danger:hover,
+.bg-red:hover,
+i-button[type='delete'] button:hover,
+i-button[type='cancel'] button:hover,
+.ui.red.button:hover,
+.ui.negative.button:hover {
+  background: var(--social-button-danger-hover) !important;
+}
+
+.bg-green,
+i-button[type='add'] button,
+i-button[type='save'] button,
+.ui.green.button,
+.ui.positive.button {
+  color: #ffffff !important;
+  background: linear-gradient(180deg, rgba(16, 215, 196, 0.16), rgba(15, 118, 110, 0.08)), var(--social-button-success-bg) !important;
+  border-color: var(--social-accent-2) !important;
+}
+
+.bg-green:hover,
+i-button[type='add'] button:hover,
+i-button[type='save'] button:hover,
+.ui.green.button:hover,
+.ui.positive.button:hover {
+  background: var(--social-button-success-hover) !important;
+}
+
+button i,
+.btn i,
+i-button button i,
+.ui.button > .icon {
+  color: rgba(174, 223, 255, 0.86) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.address-input:focus-within {
+  border-color: var(--social-accent) !important;
+  box-shadow: 0 0 0 3px rgba(33, 168, 255, 0.16) !important;
+}
+
+@keyframes social-premium-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

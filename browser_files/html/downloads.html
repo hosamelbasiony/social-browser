@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Downloads</title>
+    <link rel="stylesheet" href="http://127.0.0.1:60080/x-css/bootstrap-5-support.css" />
+    <link rel="stylesheet" href="http://127.0.0.1:60080/css/downloads.css" />
+  </head>
+
+  <body ng-controller="mainController">
+    <h1 class="center">Downloads</h1>
+    <a ng-show="download_list.length > 2" class="btn bg-red white" ng-click="deleteAll(d)"> Delete All </a>
+    <div class="downloads">
+      <div class="item" ng-repeat="d in download_list | orderBy:'-date'">
+        <div class="row">
+          <a class="btn" ng-click="copyLink(d)"> Copy Downloading Link </a>
+          <a class="btn bg-red white bold" ng-click="remove(d)"> <i class="fa fa-trash"></i> Delete </a>
+          <span class="item-date"> {{d.date | date:' yyyy-MM-dd HH:mm:ss '}} </span>
+          <a ng-show="d.status === 'completed'" class="btn" ng-click="openFolder(d)"> Open Folder </a>
+          <a ng-show="d.status === 'completed'" class="btn" ng-click="openFile(d)"> Open File </a>
+          <a ng-show="d.status === 'downloading'" class="btn" ng-click="pause(d)"> Pause </a>
+          <a ng-show="d.status === 'paused' || d.status === 'pause'" class="btn" ng-click="resume(d)"> Resume </a>
+        </div>
+        <div class="row">
+          <p title="{{d.url}}" class="item-name">
+            {{d.name}}
+            <small class="bold blue"> [ {{d.mimeType}} ] </small>
+            <small class="bold green"> ( {{d.status}} ) </small>
+          </p>
+
+          <p class="item-path">
+            {{d.path}}
+
+            <span class="item-percent"> ( {{d.received/1000000 | number:2}}mb / {{d.total/1000000 | number:2}}mb ) {{d.received / d.total * 100 | number:2}} % </span>
+          </p>
+          <div class="item-progress">
+            <progress max="{{d.total}}" value="{{d.received}}" class="progress-bar"></progress>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="http://127.0.0.1:60080/x-js/bootstrap-5-support.js"></script>
+    <script>
+      var _____ = globalThis.this;
+      
+      var app = angular.module('myApp', []);
+      app.controller('mainController', function ($scope, $http, $interval) {
+        $scope.pause = function (item) {
+          $http({
+            method: 'POST',
+            url: 'http://127.0.0.1:60080/api/download_list/pause-item',
+            data: item,
+          });
+        };
+
+        $scope.resume = function (item) {
+          $http({
+            method: 'POST',
+            url: 'http://127.0.0.1:60080/api/download_list/resume-item',
+            data: item,
+          });
+        };
+
+        $scope.redownload = function (item) {
+          $http({
+            method: 'POST',
+            url: 'http://127.0.0.1:60080/api/download_list/redownload-item',
+            data: item,
+          });
+        };
+
+        $scope.copyLink = function (item) {
+          _____.copy(item.url);
+        };
+
+        $scope.remove = function (item) {
+          $http({
+            method: 'POST',
+            url: 'http://127.0.0.1:60080/api/download_list/remove-item',
+            data: item,
+          });
+        };
+        $scope.deleteAll = function () {
+          $scope.download_list.forEach((dl) => {
+            $scope.remove(dl);
+          });
+        };
+        $scope.openFile = function (item) {
+          if (item.path) {
+            _____.electron.shell.openExternal(item.path);
+          }
+        };
+        $scope.openFolder = function (item) {
+          if (item.path) {
+            _____.ipcSync('[open-folder]', _____.ipcSync('[dir-name]', item.path));
+          }
+        };
+        $scope.loadDownloads = function () {
+          $http({
+            method: 'GET',
+            url: 'http://127.0.0.1:60080/api/download_list',
+          }).then(function (response) {
+            if (response.data.done) {
+              $scope.download_list = response.data.list;
+            } else {
+              $scope.download_list = [];
+            }
+            $scope.$applyAsync();
+          });
+        };
+
+        $scope.download_list = [];
+        $scope.loadDownloads();
+
+        _____.on('$download_item', (e, dl) => {
+          let index = $scope.download_list.findIndex((d) => d.id == dl.id);
+          if (index !== -1) {
+            if (dl.status == 'delete') {
+              $scope.download_list.splice(index, 1);
+            } else {
+              $scope.download_list[index] = { ...$scope.download_list[index], ...dl };
+            }
+            $scope.$applyAsync();
+          } else {
+            $scope.download_list.push(dl);
+          }
+          $scope.$applyAsync();
+        });
+      });
+    </script>
+  </body>
+</html>

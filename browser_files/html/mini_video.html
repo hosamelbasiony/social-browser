@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Mini Video</title>
+
+    <style>
+      video {
+        position: fixed !important;
+        top: 1% !important;
+        left: 1% !important;
+        width: 98% !important;
+        height: 98% !important;
+      }
+      body {
+        background: #07111f;
+      }
+      video {
+        background: #07111f;
+        border-radius: 10px;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+      }
+    </style>
+  </head>
+
+  <body>
+    <video class="video-js" data-setup="{}" preload="auto" autobuffer x-webkit-airplay="allow" webkit-playsinline controls autoplay></video>
+
+    <script>
+      let url = document.location.href.split('?url=')[1];
+      document.querySelector('video').src = url;
+    </script>
+  </body>
+</html>

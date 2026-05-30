@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title> one Window </title>
+    <style>
+        
+    .address-bar{
+        display: block;
+    }
+    webview{
+        position: fixed;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        top: 50px;
+    }
+    body{
+        margin: 0;
+        background: #07111f;
+    }
+    .address-bar{
+        background: #0a1727;
+        color: #f6f9ff;
+        border: 1px solid #244664;
+        height: 40px;
+        width: 100%;
+        outline: none;
+        padding: 0 12px;
+    }
+    webview{
+        background: #07111f;
+    }
+    </style>
+</head>
+<body>
+    
+    <input type="text" class="address-bar">
+    <webview> </webview>
+
+</body>
+</html>

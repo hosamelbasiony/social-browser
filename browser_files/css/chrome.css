@@ -1,0 +1,138 @@
+:root {
+  --background1: #03a9f4;
+  --background2: #ffffff;
+}
+.top-bar {
+  -webkit-app-region: drag;
+}
+.browser-actions {
+  border-bottom: 4px solid #fff;
+}
+.chrome-address-bar {
+  height: 40px;
+  border-bottom: 1px solid #eee;
+  background-color: var(--background2);
+}
+.window-actions {
+  display: block;
+  height: 40px;
+}
+.window-actions a {
+  color: #fff;
+  border-radius: 20px;
+  padding: 6px 11px;
+  cursor: pointer;
+  font-size: 18px;
+}
+.social-close {
+  text-align: center;
+  -webkit-app-region: no-drag;
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  z-index: 1000;
+  padding: 5px 9px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.social-close:hover {
+  background: red;
+}
+.social-close i,
+.social-maxmize i,
+.social-minmize i {
+  vertical-align: top;
+}
+
+.social-maxmize {
+  text-align: center;
+  -webkit-app-region: no-drag;
+  position: fixed;
+  top: 0px;
+  right: 35px;
+  z-index: 1000;
+  padding: 5px 9px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.social-maxmize:hover {
+  background: #2196f3;
+}
+
+.social-minmize {
+  text-align: center;
+  -webkit-app-region: no-drag;
+  position: fixed;
+  top: 0px;
+  right: 70px;
+  z-index: 1000;
+  padding: 5px 9px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.social-minmize:hover {
+  background: #2196f3;
+}
+
+#user_name {
+  -webkit-app-region: no-drag;
+  position: fixed;
+  right: 120px;
+  top: 3px;
+  min-width: 200px;
+  font-family: monospace;
+  border-radius: 4px;
+  background-color: #2196F3;
+  padding: 3px 7px;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 12px;
+  z-index: 999999;
+}
+
+#user_name:hover {
+  transform: scale(1.1);
+}
+
+/* Social Browser premium dark chrome */
+:root {
+  --background1: #07111f;
+  --background2: #12243a;
+  --icon-color: rgba(148, 183, 214, 0.72);
+}
+
+.browser-actions,
+.chrome-address-bar {
+  border-color: #244664;
+}
+
+.window-actions a,
+.social-close,
+.social-maxmize,
+.social-minmize {
+  color: var(--icon-color);
+  text-shadow: 0 1px 10px rgba(33, 168, 255, 0.16);
+}
+
+.social-maxmize:hover,
+.social-minmize:hover,
+#user_name {
+  background: #1a3350;
+}
+
+@keyframes social-premium-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

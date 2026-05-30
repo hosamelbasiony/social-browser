@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Internal Portal — Live Events</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #e2e8f0;
+        }
+
+        .container { max-width: 680px; margin: 0 auto; }
+
+        header { text-align: center; margin-bottom: 28px; }
+        header h1 { font-size: 26px; font-weight: 700; color: #f8fafc; }
+        header p  { color: #64748b; font-size: 13px; margin-top: 6px; }
+
+        .status-bar {
+            display: flex; align-items: center; gap: 8px;
+            justify-content: center; margin-bottom: 24px;
+        }
+        .dot { width: 9px; height: 9px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+        .status-bar span { font-size: 13px; color: #64748b; }
+
+        /* Info banner */
+        .info-banner {
+            background: #1e293b; border: 1px solid #334155; border-left: 4px solid #f59e0b;
+            border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;
+            font-size: 13px; color: #94a3b8; line-height: 1.6;
+        }
+        .info-banner strong { color: #f59e0b; }
+
+        /* Controls */
+        .controls {
+            background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+            padding: 18px; margin-bottom: 22px;
+            display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+        }
+        .controls input[type="text"] {
+            flex: 1; min-width: 180px;
+            background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+            padding: 9px 14px; color: #e2e8f0; font-size: 14px; outline: none;
+            transition: border-color .2s;
+        }
+        .controls input:focus { border-color: #3b82f6; }
+        .btn {
+            padding: 9px 20px; border-radius: 8px; border: none;
+            font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap;
+        }
+        .btn-primary { background: linear-gradient(135deg,#3b82f6,#6366f1); color: #fff; }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-random  { background: #10b981; color: #fff; }
+        .btn-random:hover { background: #059669; }
+        .btn-clear   { background: #334155; color: #94a3b8; }
+        .btn-clear:hover { background: #475569; color: #e2e8f0; }
+
+        /* Events */
+        .events-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px;
+        }
+        .events-header h2 { font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        .event-count { background: #1e3a5f; color: #60a5fa; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+        /* .event-card / .event-title / .event-date — same selectors as real site */
+        .event-card {
+            background: #1e293b; border: 1px solid #334155; border-left: 4px solid #3b82f6;
+            border-radius: 10px; padding: 18px 20px; margin-bottom: 14px;
+            animation: slideIn .4s ease; transition: border-color .3s;
+        }
+        .event-card:hover { border-left-color: #6366f1; }
+        .event-card.new   { border-left-color: #10b981; animation: slideIn .4s ease, flashBg 1.2s ease; }
+
+        @keyframes slideIn { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes flashBg { 0%,100%{background:#1e293b} 40%{background:#0d3321} }
+
+        .event-badge {
+            display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px;
+            border-radius: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .event-card.new .event-badge { background:#065f46; color:#6ee7b7; }
+        .event-card:not(.new) .event-badge { background:#1d4ed8; color:#bfdbfe; }
+
+        .event-title { font-weight: 700; color: #f1f5f9; font-size: 17px; margin-bottom: 8px; line-height: 1.4; }
+        .event-date  { color: #64748b; font-size: 13px; }
+        .event-date::before { content: '📅 '; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: #475569; }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+        footer { text-align: center; margin-top: 28px; font-size: 12px; color: #334155; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <header>
+        <h1>🏢 Company Active Events Stream</h1>
+        <p>Standalone server · Extension preload.js detection test</p>
+    </header>
+
+    <div class="status-bar">
+        <div class="dot"></div>
+        <span>Live stream active</span>
+    </div>
+
+    <!-- Info banner explaining this page -->
+    <div class="info-banner">
+        <strong>⚡ Standalone Mode</strong> — This page has <strong>no notification logic</strong>.
+        The extension's <code>preload.js</code> is the only thing detecting events and sending
+        Telegram alerts. If you receive a Telegram message after clicking 🎲 Random, the
+        extension is working correctly from an external page.
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <input type="text" id="custom-title" placeholder="Event title (optional)" />
+        <button class="btn btn-primary" onclick="createEvent()">➕ Add Event</button>
+        <button class="btn btn-random" onclick="createRandomEvent()">🎲 Random</button>
+        <button class="btn btn-clear" onclick="clearEvents()">🗑 Clear</button>
+    </div>
+
+    <div class="events-header">
+        <h2>Active Events</h2>
+        <span class="event-count" id="event-count">0 events</span>
+    </div>
+
+    <div id="events-container">
+        <div class="empty-state">
+            <div class="icon">📋</div>
+            <p>No events yet. Click <strong>🎲 Random</strong> or add a custom event.</p>
+        </div>
+    </div>
+
+    <footer>standalone_mock.html · served from external local server</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// ZERO notification logic here!
+// The extension's preload.js detects .event-card via MutationObserver
+// and POSTs to http://127.0.0.1:60080/extentions/event-monitor/notify
+// ═══════════════════════════════════════════════════════════════════════════
+
+var eventCounter = 0;
+
+var randomPool = [
+    { title: 'Annual Strategic IT Alignment Board Meeting',      date: '2026-06-15 09:00' },
+    { title: 'Q2 Financial Performance Review',                  date: '2026-06-18 14:30' },
+    { title: 'Emergency Infrastructure Maintenance Window',      date: '2026-06-20 02:00' },
+    { title: 'New Product Launch Kickoff — Horizon Platform',    date: '2026-07-01 10:00' },
+    { title: 'All-Hands: Company Strategy Update',               date: '2026-07-05 11:00' },
+    { title: 'Security Compliance Audit — Phase 2',              date: '2026-07-08 09:30' },
+    { title: 'Client Onboarding Workshop — Enterprise Tier',     date: '2026-07-10 13:00' },
+    { title: 'Data Center Migration Sprint Planning',            date: '2026-07-12 15:00' },
+    { title: 'Leadership Townhall — H2 Roadmap',                 date: '2026-07-15 10:00' },
+    { title: 'AI Integration Pilot Review — Internal Beta',      date: '2026-07-18 14:00' },
+];
+
+function updateCount() {
+    var n = document.querySelectorAll('.event-card').length;
+    document.getElementById('event-count').textContent = n + (n === 1 ? ' event' : ' events');
+}
+
+function createCard(title, date, isNew) {
+    var empty = document.querySelector('.empty-state');
+    if (empty) empty.remove();
+
+    var container = document.getElementById('events-container');
+    var card      = document.createElement('div');
+    card.className = 'event-card' + (isNew ? ' new' : '');
+
+    var badge   = document.createElement('div');
+    badge.className = 'event-badge';
+    badge.textContent = isNew ? 'NEW' : 'SCHEDULED';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'event-title';
+    titleEl.textContent = title;
+
+    var dateEl  = document.createElement('div');
+    dateEl.className = 'event-date';
+    dateEl.textContent = date;
+
+    card.appendChild(badge);
+    card.appendChild(titleEl);
+    card.appendChild(dateEl);
+    container.insertBefore(card, container.firstChild);
+    updateCount();
+
+    if (isNew) {
+        setTimeout(function () { card.classList.remove('new'); }, 1400);
+        // NO notification logic here — preload.js handles it!
+        console.log('[Standalone] New card added: ' + title + ' — waiting for preload.js to detect...');
+    }
+}
+
+function createEvent() {
+    var input = document.getElementById('custom-title');
+    var title = input.value.trim();
+    if (!title) { input.focus(); return; }
+    var date = new Date().toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
+    createCard(title, date, true);
+    input.value = '';
+    input.focus();
+}
+
+function createRandomEvent() {
+    var ev = randomPool[Math.floor(Math.random() * randomPool.length)];
+    createCard(ev.title + ' #' + (++eventCounter), ev.date, true);
+}
+
+function clearEvents() {
+    document.getElementById('events-container').innerHTML =
+        '<div class="empty-state"><div class="icon">📋</div><p>No events yet.</p></div>';
+    updateCount();
+}
+
+document.getElementById('custom-title').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') createEvent();
+});
+</script>
+</body>
+</html>

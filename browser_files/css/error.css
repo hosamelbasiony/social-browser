@@ -1,0 +1,26 @@
+body{
+    background-color: #fff;
+    font-family: monospace;
+}
+h1{
+    text-align: center;
+    color: red;
+}
+h2{
+    text-align: center;
+    color: blue;
+}
+
+/* Social Browser premium dark error page */
+body {
+    background: radial-gradient(circle at top left, rgba(33, 168, 255, 0.12), transparent 34%), #07111f;
+    color: #f6f9ff;
+}
+
+h1 {
+    color: #ef4444;
+}
+
+h2 {
+    color: #21a8ff;
+}

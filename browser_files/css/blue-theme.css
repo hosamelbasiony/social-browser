@@ -1,0 +1,36 @@
+:root {
+    --color: #fff;
+    --icon-color: rgba(148, 183, 214, 0.72);
+    --fieldset-background: #0d1b2e;
+    --legend-color: #21a8ff;
+    --social-box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    --social-background-color: #07111f;
+
+    --social-current-tab-fill: #07111f;
+    --social-other-tab-fill: #172b46;
+
+    --social-tab-color: #ffffff;
+    --social-other-tab-color: #b8c7d9;
+    --social-address-background: #0a1727;
+    --social-address-color: #ffffff;
+    --scrollbar-background-color: #06101d;
+    --scrollbar-color: #21a8ff;
+}
+span.btn {
+    background: #1a3350 !important;
+    color: #ffffff !important;
+}
+.green {
+    color: #10d7c4 !important;
+}
+
+.url-list ul li:hover,
+.url-list ul li.selected {
+    background-color: #12243a !important;
+}
+.user-box p {
+    color: #ffffff !important;
+}
+.user-box p span {
+    color: #f5c84b !important;
+}

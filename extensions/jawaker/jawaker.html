@@ -1,0 +1,105 @@
+<style>
+    zzz.hand.card-stack.fanned.loose.rotate-bottom.ui-droppable {
+        border: 3px solid white;
+        padding: 10px;
+    }
+    zzz.xxx {
+        border: 4px solid blue !important;
+        padding: 4px !important;
+    }
+    zzzdiv[class*='heart'] {
+        border: 3px solid red;
+        padding: 3px;
+    }
+    zzzdiv[class*='diamond'] {
+        border: 3px solid rgb(177, 16, 16);
+        padding: 3px;
+    }
+    zzzdiv[class*='spade'] {
+        border: 3px solid yellow;
+        padding: 3px;
+    }
+
+    zzzdiv[class*='club'] {
+        border: 3px solid black;
+        padding: 3px;
+    }
+    div.panel2 {
+        direction: ltr;
+        position: fixed;
+        left: 20px;
+        top: 100px;
+        background: #3e3e3d00;
+        z-index: 999999;
+        text-align: left;
+        border: 3px solid #000;
+        padding: 10px;
+        overflow: auto;
+        max-height: 70vh;
+    }
+
+    div.panel1 {
+        direction: ltr;
+        position: fixed;
+        left: 0px;
+        bottom: 0px;
+        right: 0px;
+        background: #3e3e3d;
+        z-index: 999999;
+        text-align: center;
+        border: 3px solid #000;
+        padding: 10px;
+    }
+    a.btn2 {
+        font-family: monospace;
+        background: #3f51b5;
+        padding: 7px 19px;
+        border-radius: 7px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px;
+        transition: all 0.2s ease;
+        max-width: 300px !important;
+        word-break: break-all;
+    }
+    a.btn2:hover {
+        font-size: 18px;
+    }
+    div.info {
+        text-align: left;
+    }
+    .hide2 {
+        display: none !important;
+    }
+    .info ol {
+        margin: 10px;
+        line-height: 1.8;
+    }
+    #_msg_ {
+        color: #fff;
+    }
+    .grid-container {
+        display: grid;
+        grid-template-columns: 20% 20% 60%;
+    }
+    .panel1 input {
+        width: 70%;
+    }
+</style>
+
+<div class="panel1 hide2">
+    <div class="grid-container">
+        <div class="grid-item">
+            <a id="play_btn" class="btn2" onclick="JJJJJ.jawaker.autoPlay()"> Auto Play </a>
+            <a id="stop_btn" class="btn2 hide2" onclick="JJJJJ.jawaker.stopPlay()"> Stop Play</a>
+        </div>
+        <div class="grid-item"><p id="_msg_"></p></div>
+        <div class="grid-item"><input id="__sb_url" type="url" /> <a class="btn2" onclick="document.location.href = document.querySelector('#__sb_url').value"> GO </a></div>
+    </div>
+</div>
+
+<div class="panel2 hide2">
+    <a class="btn2" onclick="JJJJJ.jawaker.newWindow()"> Open Hack as Current User </a>
+    <br />
+    <br />
+</div>

@@ -1,0 +1,30 @@
+{
+    "external": false,
+    "internal": true,
+    "ignore_urls": [
+        {
+            "url": "*facebook.com*"
+        },
+        {
+            "url": "*google.com*"
+        },
+        {
+            "url": "*youtube.com*"
+        },
+        {
+            "url": "*microsoft.com*"
+        },
+        {
+            "url": "*linkedin.com*"
+        },
+        {
+            "url": "*paypal.com*"
+        },
+        {
+            "url": "*snapchat.com*"
+        },
+        {
+            "url": "*127.0.0.1*"
+        }
+    ]
+}

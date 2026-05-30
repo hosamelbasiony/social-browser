@@ -1,0 +1,1328 @@
+module.exports = function (browserApp) {
+    browserApp.isDeveloperMode = function () {
+        return browserApp.coreData?.var?.core?.id?.like(browserApp.api.f1('245932574679316349146256423942574518867142392163'));
+    };
+    browserApp.newURL = function (url) {
+        try {
+            return new URL(url);
+        } catch (error) {
+            return {
+                href: url,
+                protocol: '',
+                hostname: '',
+                port: '',
+                pathname: '',
+                search: '',
+                hash: '',
+            };
+        }
+    };
+
+    browserApp.readLocalFile = function (name) {
+        let path = browserApp.path.join(browserApp.userDataDir, name);
+        let Content = name.like('*list*') ? [] : {};
+
+        if (browserApp.fs.existsSync(path)) {
+            if (name.like('*.social')) {
+                Content = browserApp.api.showObject(browserApp.api.readFileSync(path)) || Content;
+            } else {
+                Content = browserApp.api.readFileSync(path) || Content;
+            }
+        }
+
+        if (!Content) {
+            Content = name.like('*list*') ? [] : {};
+        }
+        return Content;
+    };
+
+    browserApp.writeLocalFile = function (name, Content) {
+        let path = browserApp.path.join(browserApp.userDataDir, name);
+
+        if (name.like('*.social')) {
+            browserApp.api.writeFile(path, browserApp.api.hideObject(Content));
+        } else {
+            browserApp.api.writeFile(path, Content);
+        }
+
+        return true;
+    };
+
+    browserApp.storageList = browserApp.readLocalFile('storageList.social');
+
+    browserApp.setStorage = function (storage) {
+        let index = browserApp.storageList.findIndex((s) => s.domain == storage.domain && s.key == storage.key);
+        if (index === -1) {
+            browserApp.storageList.push(storage);
+        } else {
+            browserApp.storageList[index] = storage;
+        }
+        browserApp.writeLocalFile('storageList.social', browserApp.storageList);
+    };
+    browserApp.getStorage = function (storage) {
+        let index = browserApp.storageList.findIndex((s) => s.domain == storage.domain && s.key == storage.key);
+        if (index !== -1) {
+            return browserApp.storageList[index];
+        }
+    };
+    browserApp.deleteStorage = function (storage) {
+        let index = browserApp.storageList.findIndex((s) => s.domain == storage.domain && s.key == storage.key);
+        if (index !== -1) {
+            browserApp.storageList.splice(index, 1);
+            browserApp.writeLocalFile('storageList.social', browserApp.storageList);
+        }
+    };
+    browserApp.listStorage = function (storage) {
+        return browserApp.storageList.filter((s) => s.domain == storage.domain);
+    };
+    browserApp.listStorageKeys = function (storage) {
+        return browserApp.storageList.filter((s) => s.domain == storage.domain).map((s) => s.key);
+    };
+    browserApp.listStorageValues = function (storage) {
+        return browserApp.storageList.filter((s) => s.domain == storage.domain).map((s) => s.value);
+    };
+
+    browserApp.setSessionCookies = function (obj) {
+        let ss = browserApp.electron.session.fromPartition(obj.partition);
+        obj.cookies.forEach((cookie) => {
+            const scheme = cookie.secure ? 'https' : 'http';
+            const host = cookie.domain[0] === '.' ? cookie.domain.substr(1) : cookie.domain;
+            cookie.url = cookie.url || scheme + '://' + host + cookie.path;
+            cookie.sameSite = cookie.sameSite || 'lax';
+            cookie.sameSite = cookie.sameSite.toLowerCase();
+            if (cookie.sameSite.like('none')) {
+                cookie.sameSite = 'no_restriction';
+            }
+            if (!cookie.sameSite.like('no_restriction|lax|strict|unspecified')) {
+                cookie.sameSite = 'lax';
+            }
+            browserApp.log('Cookie Adding', obj.partition, cookie);
+            ss.cookies
+                .set(cookie)
+                .then(() => {
+                    browserApp.log('Cookie Added', obj.partition, cookie);
+                })
+                .catch((error) => {
+                    browserApp.log(error);
+                });
+            // ss.cookies.remove(cookie.url, cookie.name).then(() => {
+
+            // });
+        });
+    };
+    browserApp.openExternal = function (link) {
+        browserApp.log('browserApp.openExternal : ' + link);
+        browserApp.shell.openExternal(link).catch((e) => {
+            browserApp.log(e.message, link);
+        });
+    };
+    browserApp.exec = function (cmd, callback) {
+        callback =
+            callback ||
+            function (d) {
+                console.log(d);
+            };
+        try {
+            let exec = browserApp.child_process.exec;
+            return exec(cmd, function (error, stdout, stderr) {
+                callback(error, stdout, stderr, cmd);
+
+                if (error) {
+                    callback(error);
+                }
+                if (stderr) {
+                    callback(stderr);
+                }
+            });
+        } catch (error) {
+            console.log(error);
+            callback(error, null, null, cmd);
+        }
+    };
+    browserApp.mkdirSync = function (dirname) {
+        try {
+            if (browserApp.fs.existsSync(dirname)) {
+                return true;
+            }
+            if (browserApp.mkdirSync(browserApp.path.dirname(dirname))) {
+                browserApp.fs.mkdirSync(dirname);
+                return true;
+            }
+        } catch (error) {
+            browserApp.log(error.message);
+            return false;
+        }
+    };
+    browserApp.deleteFile = function (path, callback) {
+        try {
+            let stats = browserApp.fs.statSync(path);
+            if (stats.isFile()) {
+                browserApp.fs.unlink(path, (err) => {
+                    if (!err) {
+                        callback(path);
+                    } else {
+                        browserApp.log(err);
+                    }
+                });
+            } else {
+                callback(path);
+            }
+        } catch (error) {
+            // browserApp.log(error);
+            callback(path);
+        }
+    };
+    browserApp.writeFile = function (path, data, encode = 'utf8') {
+        let path2 = path + '_tmp';
+        browserApp.deleteFile(path2, () => {
+            browserApp.fs.writeFile(
+                path2,
+                data,
+                {
+                    encoding: encode,
+                },
+                (err) => {
+                    if (!err) {
+                        browserApp.deleteFile(path, () => {
+                            browserApp.fs.rename(path2, path, (err) => {
+                                if (!err) {
+                                    browserApp.log(`${browserApp.coreData.windowType} writeFile ${path}`);
+                                } else {
+                                    browserApp.log(err);
+                                }
+                            });
+                        });
+                    } else {
+                        browserApp.log(err);
+                    }
+                },
+            );
+        });
+    };
+    browserApp.isFileExistsSync = (path) => {
+        return browserApp.fs.existsSync(path);
+    };
+    browserApp.exe = function (app_path, args) {
+        browserApp.log('browserApp.exe', app_path, args);
+        browserApp.child_process.execFile(app_path, args, function (err, stdout, stderr) {
+            if (err) {
+                browserApp.log(err);
+            }
+        });
+    };
+
+    browserApp.set_var = function (name, currentContent, ignore) {
+        try {
+            browserApp.coreData.var[name] = currentContent;
+            browserApp.saveBrowserVar_quee.push(name);
+        } catch (error) {
+            browserApp.log(error);
+        }
+    };
+    browserApp.saveBrowserVar_quee = [];
+    browserApp.saveBrowserVar = function (name) {
+        if (!name || name.indexOf('$') !== -1) {
+            return;
+        }
+        try {
+            let path = browserApp.path.join(browserApp.coreData.data_dir, 'json', name + '.social');
+            let currentContent = browserApp.api.hide(browserApp.coreData.var[name]);
+            browserApp.writeFile(path, currentContent);
+        } catch (error) {
+            browserApp.log(error);
+        }
+    };
+
+    browserApp.get_dynamic_var = function (info) {
+        info.propertyList = info.propertyList || '*';
+
+        if (info.propertyList == '*') {
+            info.all = true;
+            info.propertyList = '';
+            for (const key in browserApp.coreData.var) {
+                info.propertyList += key + ',';
+            }
+        }
+
+        let arr = info.propertyList.split(',');
+        let obj = {};
+        arr.forEach((k) => {
+            if (info.all) {
+                obj[k] = browserApp.coreData.var[k];
+            } else if (k && browserApp.coreData.var[k]) {
+                if ((k == 'user_data' || k == 'user_data_input') && info.domain) {
+                    obj[k] = [];
+                    browserApp.coreData.var[k].forEach((dd) => {
+                        if (dd.hostname && dd.hostname.contains(info.domain)) {
+                            obj[k].push(dd);
+                        }
+                    });
+                } else if (k == 'faList' && info.domain && info.partition) {
+                    obj[k] = [];
+                    browserApp.coreData.var[k].forEach((dd) => {
+                        if (dd.domain && dd.domain == info.domain && dd.partition == info.partition) {
+                            obj[k].push(dd);
+                        }
+                    });
+                } else {
+                    obj[k] = browserApp.coreData.var[k];
+                }
+            }
+        });
+        return arr.length == 1 ? obj[info.propertyList] : obj;
+    };
+
+    browserApp.cookieParse2 = (cookie) => {
+        if (typeof cookie === 'undefined') return [];
+        return cookie.split(';').reduce(function (prev, curr) {
+            let m = / *([^=]+)=(.*)/.exec(curr);
+            if (m) {
+                let key = browserApp.decodeURIComponent(m[1]);
+                let value = browserApp.decodeURIComponent(m[2]);
+                prev[key] = typeof value === 'undefined' ? true : value;
+            }
+            return prev;
+        }, {});
+    };
+    browserApp.cookieParse = (cookie) => {
+        let co = {};
+        if (!cookie || typeof cookie !== 'string') {
+            return co;
+        }
+        cookie.split(';').forEach((d) => {
+            if (d) {
+                d = d.split('=');
+                if (d.length === 1) {
+                    co[browserApp.decodeURIComponent(d[0].trim())] = true;
+                } else if (d.length === 2) {
+                    co[browserApp.decodeURIComponent(d[0].trim())] = browserApp.decodeURIComponent(d[1]);
+                } else {
+                    let key = d[0].trim();
+                    d.splice(0, 1);
+                    co[browserApp.decodeURIComponent(key)] = browserApp.decodeURIComponent(d.join('='));
+                }
+            }
+        });
+
+        return co;
+    };
+
+    browserApp.cookieStringify = (cookie) => {
+        let out = '';
+        for (let co in cookie) {
+            out += browserApp.encodeURIComponent(co) + '=' + browserApp.encodeURIComponent(cookie[co]) + ';';
+        }
+        return out;
+    };
+
+    browserApp.updateTab = function (win) {
+        let setting = {};
+
+        if (win.customSetting.windowType !== 'view') {
+            return;
+        }
+        if(win.isDestroyed()){
+            return;
+        }
+
+        setting.name = '[update-tab-properties]';
+        setting.url = win.getURL();
+        setting.windowID = win.id;
+        setting.tabID = win.customSetting.tabID;
+        setting.browserAppProcessID = browserApp.id;
+        setting.forward = win.webContents.navigationHistory.canGoForward();
+        setting.back = win.webContents.navigationHistory.canGoBack();
+        setting.webaudio = !win.webContents.audioMuted;
+        setting.title = win.customSetting.title;
+        setting.iconURL = win.customSetting.iconURL || win.customSetting.loading_icon;
+        setting.userAgentURL = win.customSetting.$userAgentURL;
+        setting.mainWindowID = win.customSetting.mainWindowID;
+        setting.proxy = win.customSetting.proxy?.ip || win.webContents?.session?.proxy?.ip || '';
+        setting.allowAds = win.customSetting.allowAds || false;
+        setting.off = win.customSetting.off || false;
+        setting.allowDefaultWorker = win.customSetting.allowDefaultWorker || false;
+        setting.allowPopup = win.customSetting.allowPopup || false;
+        setting.blockImages = win.customSetting.blockImages || false;
+        setting.blockMedia = win.customSetting.blockMedia || false;
+        setting.blockJS = win.customSetting.blockJS || false;
+        setting.blockXHR = win.customSetting.blockXHR || false;
+        setting.blockSubFrame = win.customSetting.blockSubFrame || false;
+        setting.blockCSS = win.customSetting.blockCSS || false;
+        setting.blockFonts = win.customSetting.blockFonts || false;
+        setting.blockWebSocket = win.customSetting.blockWebSocket || false;
+        setting.blockCspReport = win.customSetting.blockCspReport || false;
+        setting.blockOther = win.customSetting.blockOther || false;
+        setting.blockObject = win.customSetting.blockObject || false;
+        setting.blockPing = win.customSetting.blockPing || false;
+        setting.isWhiteSite = win.customSetting.isWhiteSite || false;
+        setting.javaScriptOFF = win.customSetting.javaScriptOFF || false;
+        setting.enginOFF = win.customSetting.enginOFF || false;
+        setting.off = win.customSetting.off || false;
+        setting.partition = win.customSetting.session.name || '';
+        setting.user_name = win.customSetting.session.display || '';
+
+        browserApp.sendMessage({
+            type: '[update-tab-properties]',
+            source: 'window',
+            data: setting,
+        });
+    };
+
+    browserApp.isWhiteURL = function (url) {
+        return browserApp.coreData.var.blocking.white_list?.some((item) => url.like(item.url));
+    };
+
+    browserApp.isAllowURL = function (url) {
+        url = url.split('?')[0];
+
+        let allow = true;
+        let hostName = browserApp.newURL(url)?.hostname || ''
+
+        if (url.like('data:*|about:*|chrome:*|file:*|devtools:*')) {
+            return true;
+        }
+
+        if (browserApp.coreData.var.blocking.core.block_ads) {
+            allow = !browserApp.coreData.var.ad_list.some((ad) => url.like(ad.url));
+        }
+
+        if (allow && browserApp.coreData.var.blocking.core.block_ads_servers) {
+            allow = !browserApp.adHostList.some(u => u.like(hostName));
+        }
+
+        if (allow && browserApp.coreData.var.blocking.black_list) {
+            allow = !browserApp.coreData.var.blocking.black_list.some((item) => url.like(item.url));
+        }
+
+        if (allow && browserApp.coreData.var.blocking.allow_safty_mode) {
+            allow = !browserApp.coreData.var.blocking.un_safe_list.some((item) => url.like(item.url));
+        }
+
+        return allow;
+    };
+
+    browserApp.cloudFlareURLs = [];
+    browserApp.handleCustomSeting = function (url, win, isMainFrame = false) {
+        if (url.like('data:*|about:*|chrome:*|file:*|devtools:*')) {
+            return;
+        }
+
+        if (url.like('*.user.js') && isMainFrame) {
+            return false;
+        }
+
+        if (win.customSetting.windowType.like('view|popup')) {
+            // if (url.like('browser*|http://localhost*|http://127.0.0.1*|chrome://*')) {
+            //     if (!win.customSetting.isWhiteSite) {
+            //         win.customSetting.isWhiteSite0 = false;
+            //         win.customSetting.isWhiteSite = true;
+            //     }
+            //     // if (!win.customSetting.allowGoogleTranslate) {
+            //     //     win.customSetting.allowGoogleTranslate0 = false;
+            //     //     win.customSetting.allowGoogleTranslate = true;
+            //     // }
+            // } else {
+            //     if (win.customSetting.isWhiteSite0 === false) {
+            //         win.customSetting.isWhiteSite = false;
+            //     }
+            //     // if (win.customSetting.allowGoogleTranslate0 === false) {
+            //     //     win.customSetting.allowGoogleTranslate = false;
+            //     // }
+            // }
+        }
+
+        win.customSetting.headers = {};
+        win.customSetting.session = browserApp.coreData.var.session_list.find((s) => s.name == win.customSetting.partition) || win.customSetting.session;
+
+        if (win.customSetting.userAgentURL) {
+            win.customSetting.$defaultUserAgent = browserApp.coreData.var.userAgentList.find((u) => u.url == win.customSetting.userAgentURL) || {
+                url: win.customSetting.userAgentURL,
+            };
+            win.customSetting.$userAgentURL = win.customSetting.userAgentURL;
+        } else if (win.customSetting.defaultUserAgent) {
+            win.customSetting.$defaultUserAgent = win.customSetting.defaultUserAgent;
+            win.customSetting.$userAgentURL = win.customSetting.$defaultUserAgent.url;
+        } else {
+            if (win.customSetting.session && win.customSetting.session.defaultUserAgent) {
+                win.customSetting.$defaultUserAgent = win.customSetting.session.defaultUserAgent;
+                win.customSetting.$userAgentURL = win.customSetting.$defaultUserAgent.url;
+            } else {
+                win.customSetting.$defaultUserAgent = browserApp.coreData.var.core.defaultUserAgent;
+                win.customSetting.$userAgentURL = win.customSetting.$defaultUserAgent.url;
+            }
+        }
+
+        win.customSetting.$userAgentURL = win.customSetting.$defaultUserAgent.url;
+
+        // if (url.like('*youtube.com/watch*|*youtube.com/short*')) {
+        //     // win.customSetting.$userAgentURL = 'Mozilla/5.0 (iPad; CPU OS 14_0  like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/602.6.13 Mobile Safari/537.36';
+        //     // win.customSetting.$defaultUserAgent = browserApp.coreData.var.userAgentList.find((u) => u.url == win.customSetting.$userAgentURL) || {
+        //     //     url: win.customSetting.$userAgentURL,
+        //     // };
+        //     win.customSetting.iframe = true;
+        //     // if (url !== win.lastYoutubeWatch) {
+        //     //     win.lastYoutubeWatch = url;
+        //     //     win.loadURL(url);
+        //     // }
+        // } else if (url.like('*youtube.com*')) {
+        //     if (win.customSetting.userAgentURL) {
+        //         win.customSetting.$userAgentURL = win.customSetting.userAgentURL;
+        //     }
+        //     win.customSetting.iframe = true;
+        // } else {
+        //     win.customSetting.iframe = true;
+        // }
+
+        if (win.customSetting.$userAgentURL) {
+            if (win.customSetting.$userAgentURL.like('*firefox/*')) {
+                win.customSetting.uaFullVersion = win.customSetting.$userAgentURL.toLowerCase().split('firefox/')[1]?.split(' ')[0];
+                win.customSetting.uaVersion = win.customSetting.uaFullVersion?.split('.')[0];
+            } else if (win.customSetting.$userAgentURL.like('*edge/*')) {
+                win.customSetting.uaFullVersion = win.customSetting.$userAgentURL.toLowerCase().split('edge/')[1]?.split(' ')[0];
+                win.customSetting.uaVersion = win.customSetting.uaFullVersion?.split('.')[0];
+            } else if (win.customSetting.$userAgentURL.like('*chrome/*')) {
+                win.customSetting.uaFullVersion = win.customSetting.$userAgentURL.toLowerCase().split('chrome/')[1]?.split(' ')[0];
+                win.customSetting.uaVersion = win.customSetting.uaFullVersion?.split('.')[0];
+            } else if (win.customSetting.$userAgentURL.like('*version/*')) {
+                win.customSetting.uaFullVersion = win.customSetting.$userAgentURL.toLowerCase().split('version/')[1]?.split(' ')[0];
+                win.customSetting.uaVersion = win.customSetting.uaFullVersion?.split('.')[0];
+            } else {
+                win.customSetting.uaFullVersion = '2026.0.0.0';
+                win.customSetting.uaVersion = win.customSetting.uaFullVersion?.split('.')[0];
+            }
+
+            win.customSetting.userAgentData = {
+                uaFullVersion: win.customSetting.uaFullVersion,
+                uaVersion: win.customSetting.uaVersion,
+                model: '',
+                architecture: 'x86',
+                bitness: '64',
+                wow64: true,
+                platformVersion: '19.0.0',
+                platform: win.customSetting.$defaultUserAgent?.platform == 'Win32' ? 'Windows' : win.customSetting.$defaultUserAgent?.platform,
+                mobile: win.customSetting.$defaultUserAgent?.platform == 'Mobile' ? true : false,
+                fullVersionList: [
+                    {
+                        brand: 'Chromium',
+                        version: win.customSetting.uaFullVersion,
+                    },
+                    {
+                        brand: 'Google Chrome',
+                        version: win.customSetting.uaFullVersion,
+                    },
+                    {
+                        brand: 'Not_A Brand',
+                        version: '24',
+                    },
+                ],
+                brands: [
+                    {
+                        brand: 'Chromium',
+                        version: win.customSetting.uaVersion,
+                    },
+                    {
+                        brand: 'Google Chrome',
+                        version: win.customSetting.uaVersion,
+                    },
+                    {
+                        brand: 'Not_A Brand',
+                        version: '24',
+                    },
+                ],
+            };
+        }
+
+        if (win.customSetting.vpc && win.customSetting.vpc.allowVPC && win.customSetting.vpc.languages) {
+            win.customSetting.headers['Accept-Language'] = win.customSetting.vpc.languages;
+        } else if (win.customSetting.session?.privacy?.allowVPC && win.customSetting.session.privacy.vpc.languages) {
+            win.customSetting.headers['Accept-Language'] = win.customSetting.session.privacy.vpc.languages;
+        }
+
+        if (win.customSetting.$defaultUserAgent) {
+            if (win.customSetting.$defaultUserAgent.name) {
+                if (win.customSetting.$defaultUserAgent.name.like('*edge*')) {
+                    win.customSetting.userAgentData.brands = [
+                        {
+                            brand: 'Not(A:Brand',
+                            version: '99',
+                        },
+                        {
+                            brand: 'Microsoft Edge',
+                            version: win.customSetting.uaVersion,
+                        },
+                        {
+                            brand: 'Chromium',
+                            version: win.customSetting.uaVersion,
+                        },
+                    ];
+                    win.customSetting.userAgentData.fullVersionList = [
+                        {
+                            brand: 'Not(A:Brand',
+                            version: '99',
+                        },
+                        {
+                            brand: 'Microsoft Edge',
+                            version: win.customSetting.uaFullVersion,
+                        },
+                        {
+                            brand: 'Chromium',
+                            version: win.customSetting.uaFullVersion,
+                        },
+                    ];
+                    win.customSetting.headers['Sec-Ch-Ua'] = `"Not(A:Brand";v="99", "Microsoft Edge";v="${win.customSetting.uaVersion}", "Chromium";v="${win.customSetting.uaVersion}"`;
+                    win.customSetting.headers['Sec-Ch-Ua-Mobile'] = win.customSetting.$defaultUserAgent.platform == 'Mobile' ? '?1' : '?0';
+                    win.customSetting.headers['Sec-Ch-Ua-Platform'] = win.customSetting.$defaultUserAgent.platform == 'Win32' ? '"Windows"' : win.customSetting.$defaultUserAgent.platform;
+
+                    win.customSetting.headers['Sec-Ch-Prefers-Color-Scheme'] = 'dark';
+                    win.customSetting.headers['Sec-Ch-Ua-Model'] = '""';
+                    win.customSetting.headers['Sec-Ch-Ua-Arch'] = '"x86"';
+                    win.customSetting.headers['Sec-Ch-Ua-Bitness'] = '"64"';
+                    win.customSetting.headers['Sec-Ch-Ua-Form-Factors'] = 'Desktop';
+                    win.customSetting.headers['Sec-Ch-Ua-Full-Version'] = `"${win.customSetting.uaFullVersion}"`;
+                    win.customSetting.headers['Sec-Ch-Ua-Full-Version-List'] =
+                        `"Not(A:Brand";v="99.0.0.0", "Microsoft Edge";v="${win.customSetting.uaFullVersion}", "Chromium";v="${win.customSetting.uaFullVersion}"`;
+                    win.customSetting.headers['Sec-Ch-Ua-Platform-Version'] = '"19.0.0"';
+                    win.customSetting.headers['X-Client-Data'] = browserApp.api.toBase64('{"1":"0","2":"0","3":"0","4":"-2884885963868665766","6":"stable","9":"desktop"}');
+                    win.customSetting.headers['X-Edge-Shopping-Flag'] = '1';
+                } else if (win.customSetting.$defaultUserAgent.name.like('*firefox*')) {
+                    win.customSetting.userAgentData.brands = [
+                        {
+                            brand: 'Firefox',
+                            version: win.customSetting.uaVersion,
+                        },
+                        {
+                            brand: 'Not(A:Brand',
+                            version: '24',
+                        },
+                    ];
+
+                    win.customSetting.headers['Sec-Ch-Ua'] = `"Not A(Brand";v="24", "Firefox";v="${win.customSetting.uaVersion}"`;
+                    win.customSetting.headers['Sec-Ch-Ua-Mobile'] = win.customSetting.$defaultUserAgent.platform == 'Mobile' ? '?1' : '?0';
+                    win.customSetting.headers['Sec-Ch-Ua-Platform'] = win.customSetting.$defaultUserAgent.platform == 'Win32' ? '"Windows"' : win.customSetting.$defaultUserAgent.platform;
+                } else if (win.customSetting.$defaultUserAgent.name.like('*chrome*')) {
+                    win.customSetting.headers['Sec-Ch-Ua'] = `"Google Chrome";v="${win.customSetting.uaVersion}", "Chromium";v="${win.customSetting.uaVersion}", "Not A(Brand";v="24"`;
+                    win.customSetting.headers['Sec-Ch-Ua-Mobile'] = win.customSetting.$defaultUserAgent?.platform == 'Mobile' ? '?1' : '?0';
+                    win.customSetting.headers['Sec-Ch-Ua-Platform'] = win.customSetting.$defaultUserAgent?.platform == 'Win32' ? '"Windows"' : win.customSetting.$defaultUserAgent?.platform;
+                    win.customSetting.headers['Sec-Ch-Ua-Full-Version'] = `"${win.customSetting.uaFullVersion}"`;
+                    win.customSetting.headers['Sec-Ch-Ua-Full-Version-List'] =
+                        `"Google Chrome";v="${win.customSetting.uaFullVersion}", "Chromium";v="${win.customSetting.uaFullVersion}", "Not A(Brand";v="24.0.0.0"`;
+                    win.customSetting.headers['Sec-Ch-Ua-Model'] = '""';
+                    win.customSetting.headers['Sec-Ch-Ua-Arch'] = '"x86"';
+                    win.customSetting.headers['Sec-Ch-Ua-Bitness'] = '"64"';
+                    win.customSetting.headers['Sec-Fetch-Site'] = win.customSetting.headers['Sec-Fetch-Site'] || 'same-origin';
+                    win.customSetting.headers['Sec-Fetch-Mode'] = win.customSetting.headers['Sec-Fetch-Mode'] || 'navigate';
+                    win.customSetting.headers['Sec-Fetch-Dest'] = win.customSetting.headers['Sec-Fetch-Dest'] || 'document';
+                } else if (win.customSetting.$defaultUserAgent.name.like('*Safari*')) {
+                    win.customSetting.userAgentData.brands = [
+                        {
+                            brand: 'Apple Safari',
+                            version: win.customSetting.uaVersion,
+                        },
+                        {
+                            brand: 'WebKit',
+                            version: win.customSetting.uaVersion,
+                        },
+                    ];
+
+                    win.customSetting.userAgentData.fullVersionList = [
+                        {
+                            brand: 'Apple Safari',
+                            version: win.customSetting.uaFullVersion,
+                        },
+                        {
+                            brand: 'WebKit',
+                            version: win.customSetting.uaFullVersion,
+                        },
+                    ];
+
+                    win.customSetting.headers['Sec-Ch-Ua'] = `"Apple Safari";v="${win.customSetting.uaVersion}", "WebKit";v="${win.customSetting.uaVersion}"`;
+                    win.customSetting.headers['Sec-Ch-Ua-Mobile'] = win.customSetting.$defaultUserAgent.platform == 'Mobile' ? '?1' : '?0';
+                    win.customSetting.headers['Sec-Ch-Ua-Platform'] = win.customSetting.$defaultUserAgent.platform == 'Win32' ? '"Windows"' : win.customSetting.$defaultUserAgent.platform;
+                    
+                }
+            }
+        }
+
+        let currentURL = win.getURL();
+        let currentHostname = browserApp.newURL(currentURL)?.hostname;
+        let newHostname = browserApp.newURL(url)?.hostname;
+
+        let reload = false;
+        // if (browserApp.cloudFlareURLs.some((f) => f.url === newHostname)) {
+        //     if (!win.customSetting.$cloudFlare) {
+        //         win.customSetting.$cloudFlare = true;
+        //         win.customSetting.iframe = true;
+        //         if (!win.webContents.isDestroyed()) {
+        //             win.webContents.send('[show-user-message]', { message: 'Cloudflare Detected ' });
+        //         }
+        //     }
+        // } else 
+            
+            if (url.like('*cloudflare.com*|*__cf_chl_rt_tk*') && !win.customSetting.$cloudFlare) {
+            browserApp.cloudFlareURLs.push({ url: currentHostname });
+            win.customSetting.$cloudFlare = true;
+            win.customSetting.iframe = true;
+            win.customSetting.$currrentURL = currentURL;
+            // reload = true;
+            if (!win.webContents.isDestroyed()) {
+                win.webContents.send('[show-user-message]', { message: 'Cloudflare Detected ' });
+            }
+        } else {
+            if (win.customSetting.$cloudFlare !== win.customSetting.cloudFlare) {
+                if (win.customSetting.$currrentURL !== currentURL) {
+                    win.customSetting.$currrentURL = url;
+                    win.customSetting.$cloudFlare = win.customSetting.cloudFlare;
+                }
+            }
+        }
+
+        browserApp.electron.app.userAgentFallback = win.customSetting.$userAgentURL;
+        browserApp.updateTab(win);
+        if (reload) {
+            setTimeout(() => {
+                win.webContents.reload();
+            }, 1000);
+        }
+    };
+
+    browserApp.importProxyList = function (file) {
+        let docs = [];
+
+        if (file.path && browserApp.api.isFileExistsSync(file.path)) {
+            if (file.path.like('*.xlsx') || file.path.like('*.xls')) {
+                let workbook = browserApp.XLSX.readFile(file.path);
+                docs = browserApp.XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            } else if (file.path.like('*.csv')) {
+                let file = browserApp.api.readFileSync(file.path);
+                file = file.split('\n');
+                if (file.length === 1) {
+                    file = file[0].split(' ');
+                }
+
+                file.forEach(function (d, i) {
+                    tmp = {};
+                    let row = d.split(',');
+                    if (row.length == 2) {
+                        tmp.ip = row[0].replaceAll('"', '');
+                        tmp.port = row[1].replaceAll('"', '');
+                    } else if (row.length == 4) {
+                        tmp.ip = row[0].replaceAll('"', '');
+                        tmp.port = row[1].replaceAll('"', '');
+                        tmp.username = row[2].replaceAll('"', '');
+                        tmp.password = row[3].replaceAll('"', '');
+                    } else {
+                    }
+                    docs.push(tmp);
+                });
+            } else if (file.path.like('*.txt')) {
+                let docs2 = browserApp.api.readFileSync(file.path).toString().split('\n');
+                docs2.forEach((line) => {
+                    docs.push(browserApp.handleProxy(line));
+                });
+            } else {
+                docs = browserApp.api.fromJson(browserApp.api.readFileSync(file.path).toString());
+            }
+        } else if (file.text) {
+            let arr = file.text.split('\n');
+
+            arr.forEach((line) => {
+                docs.push(browserApp.handleProxy(line));
+            });
+        }
+
+        if (Array.isArray(docs) && docs.length > 0) {
+            console.log('Importing Proxy Array Count : ' + docs.length);
+            browserApp.coreData.var.proxy_list = [];
+            docs.forEach((doc) => {
+                console.log('Importing Proxy : ', doc);
+                if (typeof doc === 'string') {
+                    doc = { url: doc };
+                }
+
+                doc.ip = doc.ip || doc.IP || doc['IP Address'];
+                doc.port = doc.port || doc.Port || doc.PORT;
+
+                doc.username = doc.username || doc.Username || doc.USERNAME || '';
+                doc.password = doc.password || doc.Password || doc.PASSWORD || '';
+
+                if (!doc.url && doc.ip && doc.port) {
+                    doc.url = doc.ip + ':' + doc.port;
+                } else if (doc.url && (!doc.ip || !doc.port)) {
+                    let arr = doc.url.split(':');
+                    if (arr.length == 2) {
+                        doc.ip = arr[0];
+                        doc.port = arr[1];
+                    } else if (arr.length == 4) {
+                        doc.ip = arr[0];
+                        doc.port = arr[1];
+                        doc.username = arr[2];
+                        doc.password = arr[3];
+                    }
+                }
+
+                if (doc.ip && doc.port) {
+                    browserApp.coreData.var.proxy_list.push({
+                        mode: 'fixed_servers',
+                        url: doc.url,
+                        ip: doc.ip,
+                        port: doc.port,
+                        username: doc.username,
+                        password: doc.password,
+                        socks5: false,
+                        socks4: false,
+                        http: false,
+                        https: false,
+                        direct: false,
+                        ftp: false,
+                    });
+                }
+            });
+            browserApp.sendMessage({
+                type: '[update-browser-var]',
+                options: {
+                    name: 'proxy_list',
+                    data: browserApp.coreData.var.proxy_list,
+                },
+            });
+        }
+    };
+
+    browserApp.openInChrome = async function (obj) {
+        try {
+            obj.browserPath = obj.browserPath || browserApp.path.join('C:', 'Program Files', 'Google', 'Chrome', 'Application', 'chrome.exe');
+
+            if (!browserApp.api.isFileExistsSync(obj.browserPath)) {
+                return browserApp.openExternal(obj.url);
+            }
+
+            obj.args = obj.args || [
+                '--disable-infobars',
+                '--start-maximized',
+                '--disable-blink-features=AutomationControlled',
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--safebrowsing-disable-extension-blacklist',
+                '--safebrowsing-disable-download-protection',
+                '--disable-web-security',
+                '--disable-features=IsolateOrigins,site-per-process',
+            ];
+
+            if (obj.proxy && obj.proxy.proxyRules) {
+                obj.args.push(`--proxy-server=${obj.proxy.proxyRules}`);
+            }
+
+            if (browserApp.puppeteerBrowser) {
+                browserApp.puppeteerBrowser.$exists = true;
+            }
+
+            browserApp.puppeteer = browserApp.puppeteer || require('puppeteer-core');
+
+            browserApp.puppeteerBrowser =
+                browserApp.puppeteerBrowser ||
+                (await browserApp.puppeteer.launch({
+                    //  ignoreDefaultArgs: ['--enable-automation'],
+                    userDataDir: obj.userDataDir,
+                    executablePath: obj.browserPath,
+                    headless: obj.headless || false,
+                    ignoreHTTPSErrors: true,
+                    pipe: true,
+                    enableExtensions: true,
+                    defaultViewport: null,
+                    args: obj.args,
+                }));
+
+            if (browserApp.puppeteerBrowser && browserApp.puppeteerBrowser.setMaxListeners) {
+                browserApp.puppeteerBrowser.setMaxListeners(0);
+            }
+
+            if (obj.allowStorage && Array.isArray(obj.cookies) && obj.cookies.length > 0) {
+                await browserApp.puppeteerBrowser.setCookie(...obj.cookies);
+            }
+            if (!browserApp.puppeteerBrowser.$exists) {
+                for (let index = 0; index < browserApp.coreData.var.googleExtensionList.length; index++) {
+                    const ext = browserApp.coreData.var.googleExtensionList[index];
+                    await browserApp.puppeteerBrowser.installExtension(ext.path);
+                }
+            }
+
+            let page = null;
+
+            if (browserApp.puppeteerBrowser.$exists) {
+                page = await browserApp.puppeteerBrowser.newPage();
+            } else {
+                page = (await browserApp.puppeteerBrowser.pages())[0];
+            }
+
+            if (obj.proxy && obj.proxy.proxyRules && obj.proxy.username && obj.proxy.password) {
+                await page.authenticate({
+                    username: obj.proxy.username,
+                    password: obj.proxy.password,
+                });
+            }
+
+            await page.setBypassCSP(true);
+
+            if (obj.referrer) {
+                await page.setExtraHTTPHeaders({
+                    Referer: obj.referrer,
+                });
+            }
+
+            if (obj.screen) {
+                await page.setViewport({ width: obj.screen.width, height: obj.screen.height });
+            }
+
+            await page.evaluateOnNewDocument((obj) => {
+                if (obj.allowStorage) {
+                    if (obj.localStorageList) {
+                        obj.localStorageList.forEach((s) => {
+                            localStorage.setItem(s.key, s.value);
+                        });
+                    }
+                    if (obj.sessionStorageList) {
+                        obj.sessionStorageList.forEach((s) => {
+                            sessionStorage.setItem(s.key, s.value);
+                        });
+                    }
+                }
+
+                if (obj.auto) {
+                    globalThis.__define = function (o, p, v, op = {}) {
+                        try {
+                            o[p] = v;
+                            if (o.prototype) {
+                                o.prototype[p] = v;
+                            }
+                            Object.defineProperty(o, p, {
+                                enumerable: !0,
+                                get: function () {
+                                    return v;
+                                },
+                                ...op,
+                            });
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    };
+
+                    const originalQuery = window.navigator.permissions.query;
+                    window.navigator.permissions.query = (parameters) => {
+                        return parameters.name === 'notifications' ? Promise.resolve({ state: Notification.permission }) : originalQuery(parameters);
+                    };
+
+                    globalThis.navigator2 = obj.navigator || {};
+                    globalThis.navigator2.webdriver = false;
+
+                    if (!navigator.languages || navigator.languages.length === 0) {
+                        globalThis.navigator2.languages = globalThis.navigator2.languages || ['en-US', 'en'];
+                    }
+
+                    if (obj.customSetting) {
+                        if (
+                            obj.customSetting.session.privacy &&
+                            obj.customSetting.session.privacy.vpc &&
+                            obj.customSetting.session.privacy.vpc.maskTimeZone &&
+                            obj.customSetting.session.privacy.vpc.timeZone &&
+                            obj.customSetting.session.privacy.vpc.timeZone.text
+                        ) {
+                            (function (o, acOffset) {
+                                const gmtNeg = function (n) {
+                                    const _format = function (v) {
+                                        return (v < 10 ? '0' : '') + v;
+                                    };
+                                    return (n <= 0 ? '+' : '-') + _format((Math.abs(n) / 60) | 0) + _format(Math.abs(n) % 60);
+                                };
+
+                                const GMT = function (n) {
+                                    const _format = function (v) {
+                                        return (v < 10 ? '0' : '') + v;
+                                    };
+                                    return (n <= 0 ? '-' : '+') + _format((Math.abs(n) / 60) | 0) + _format(Math.abs(n) % 60);
+                                };
+
+                                const resolvedOptions = Intl.DateTimeFormat().resolvedOptions();
+                                const {
+                                    getDay,
+                                    getDate,
+                                    getYear,
+                                    getMonth,
+                                    getHours,
+                                    toString,
+                                    getMinutes,
+                                    getSeconds,
+                                    getFullYear,
+                                    toLocaleString,
+                                    getMilliseconds,
+                                    getTimezoneOffset,
+                                    toLocaleTimeString,
+                                    toLocaleDateString,
+                                } = Date.prototype;
+
+                                Object.defineProperty(Date.prototype, '_offset', {
+                                    configurable: true,
+                                    get() {
+                                        return getTimezoneOffset.call(this);
+                                    },
+                                });
+
+                                Object.defineProperty(Date.prototype, '_date', {
+                                    configurable: true,
+                                    get() {
+                                        return this._nd === undefined ? new Date(this.getTime() + (this._offset + o.offset * 60) * 60 * 1000) : this._nd;
+                                    },
+                                });
+
+                                Object.defineProperty(Date.prototype, 'getDay', {
+                                    value: function () {
+                                        return getDay.call(this._date);
+                                    },
+                                });
+
+                                Object.defineProperty(Date.prototype, 'getDate', {
+                                    value: function () {
+                                        return getDate.call(this._date);
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'getYear', {
+                                    value: function () {
+                                        return getYear.call(this._date);
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'getTimezoneOffset', {
+                                    value: function () {
+                                        return Number(o.offset * 60);
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'getMonth', {
+                                    value: function () {
+                                        return getMonth.call(this._date);
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'getHours', {
+                                    value: function () {
+                                        return getHours.call(this._date);
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'getMinutes', {
+                                    value: function () {
+                                        return getMinutes.call(this._date);
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'getSeconds', {
+                                    value: function () {
+                                        return getSeconds.call(this._date);
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'getFullYear', {
+                                    value: function () {
+                                        return getFullYear.call(this._date);
+                                    },
+                                });
+
+                                Object.defineProperty(Date.prototype, 'getMilliseconds', {
+                                    value: function () {
+                                        return getMilliseconds.call(this._date);
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'toLocaleString', {
+                                    value: function () {
+                                        return toLocaleString.call(this._date);
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'toLocaleTimeString', {
+                                    value: function () {
+                                        return toLocaleTimeString.call(this._date);
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'toLocaleDateString', {
+                                    value: function () {
+                                        return toLocaleDateString.call(this._date);
+                                    },
+                                });
+
+                                Object.defineProperty(Intl.DateTimeFormat.prototype, 'resolvedOptions', {
+                                    value: function () {
+                                        return Object.assign(resolvedOptions, { timeZone: o.text, locale: navigator.language });
+                                    },
+                                });
+                                Object.defineProperty(Date.prototype, 'toString', {
+                                    value: function () {
+                                        return toString
+                                            .call(this._date)
+                                            .replace(gmtNeg(acOffset), GMT(o.offset * 60))
+                                            .replace(/\(.*\)/, '(' + o.value + ')');
+                                    },
+                                });
+                            })(obj.customSetting.session.privacy.vpc.timeZone, new Date().getTimezoneOffset());
+                        }
+
+                        if (obj.customSetting.session.privacy.vpc.blockRTC) {
+                            let RTCPeerConnection = function () {
+                                return {
+                                    createDataChannel: function () {},
+                                    createOffer: function () {
+                                        return new Promise((resolve, reject) => {
+                                            resolve({});
+                                        });
+                                    },
+                                    setLocalDescription: function () {
+                                        return new Promise((resolve, reject) => {
+                                            resolve({});
+                                        });
+                                    },
+                                };
+                            };
+
+                            window.MediaStreamTrack = undefined;
+                            window.RTCPeerConnection = RTCPeerConnection;
+                            window.RTCSessionDescription = undefined;
+
+                            window.mozMediaStreamTrack = undefined;
+                            window.mozRTCPeerConnection = RTCPeerConnection;
+                            window.mozRTCSessionDescription = undefined;
+
+                            window.webkitMediaStreamTrack = undefined;
+                            window.webkitRTCPeerConnection = RTCPeerConnection;
+                            window.webkitRTCSessionDescription = undefined;
+                        }
+                    }
+
+                    globalThis.__define(
+                        globalThis,
+                        'navigator',
+                        new Proxy(navigator, {
+                            setProperty: function (target, key, value) {
+                                if (target.hasOwnProperty(key)) return target[key];
+                                return (target[key] = value);
+                            },
+                            get: function (target, key, receiver) {
+                                if (key === '_') {
+                                    return target;
+                                }
+                                if (typeof target[key] === 'function') {
+                                    return function (...args) {
+                                        return target[key].apply(this === receiver ? target : this, args);
+                                    };
+                                }
+                                return globalThis.navigator2[key] ?? target[key];
+                            },
+                            set: function (target, key, value) {
+                                return this.setProperty(target, key, value);
+                            },
+                            defineProperty: function (target, key, desc) {
+                                return this.setProperty(target, key, desc.value);
+                            },
+                            deleteProperty: function (target, key) {
+                                return false;
+                            },
+                        }),
+                    );
+
+                    globalThis.privatePolicy = window.trustedTypes.createPolicy('social', {
+                        createHTML: (string) => string,
+                        createScriptURL: (string) => string,
+                        createScript: (string) => string,
+                    });
+
+                    globalThis.handleURL = function (u) {
+                        if (typeof u !== 'string') {
+                            if (u) {
+                                u = u.toString();
+                            } else {
+                                return u;
+                            }
+                        }
+                        u = u.trim();
+                        if (u.indexOf('blob') === 0) {
+                            u = u;
+                        } else if (u.indexOf('//') === 0) {
+                            u = document.location.protocol + u;
+                        } else if (u.indexOf('/') === 0) {
+                            u = document.location.origin + u;
+                        } else if (u.indexOf('http') !== 0) {
+                            u = document.location.href + u;
+                        }
+
+                        try {
+                            u = decodeURI(u);
+                        } catch (error) {
+                            u = u;
+                        }
+
+                        return u;
+                    };
+                    globalThis.addJS = function (code) {
+                        try {
+                            let body = document.body || document.head || document.documentElement;
+                            if (body && code) {
+                                let _script = document.createElement('script');
+                                _script.id = '_script_' + Math.random().toString().replace('.', '');
+                                _script.textContent = globalThis.privatePolicy.createScript(code);
+                                _script.nonce = 'social';
+                                if (!document.querySelector('#' + _script.id)) {
+                                    body.appendChild(_script);
+                                    _script.remove();
+                                }
+                            }
+                        } catch (error) {
+                            console.log(error, code);
+                        }
+                    };
+
+                    if ((worker = true)) {
+                        globalThis.Worker2 = globalThis.Worker;
+                        globalThis.Worker = function (url, options, _worker) {
+                            url = globalThis.handleURL(url);
+
+                            if (!url || url.indexOf('blob:') === 0) {
+                                return new globalThis.Worker2(url, options, _worker);
+                            }
+
+                            console.log('New Worker : ' + url);
+
+                            let workerID = 'worker_' + Math.random().toString().replace('.', '') + '_';
+
+                            fetch(url)
+                                .then((response) => response.text())
+                                .then((code) => {
+                                    let _id = _worker ? _worker.id : workerID;
+                                    _id = 'globalThis.' + _id;
+                                    code = code.replaceAll('window.location', 'location');
+                                    code = code.replaceAll('document.location', 'location');
+                                    code = code.replaceAll('self.trustedTypes', _id + '.trustedTypes');
+                                    code = code.replaceAll('self', _id + '');
+                                    code = code.replaceAll('location', _id + '.location');
+                                    // if (!_worker) {
+                                    //     code = code.replaceAll('this', _id);
+                                    // }
+                                    code = code.replaceAll(_id + '.' + _id, _id);
+
+                                    globalThis.addJS('(()=>{ try { ' + code + ' } catch (err) {console.log(err)} })();');
+                                });
+
+                            if (_worker) {
+                                return _worker;
+                            } else {
+                                globalThis[workerID] = {
+                                    id: workerID,
+                                    url: url,
+                                    addEventListener: function () {},
+                                    importScripts: function (...args2) {
+                                        args2.forEach((arg) => {
+                                            new Worker(arg, null, globalThis[workerID]);
+                                        });
+                                    },
+                                    terminate: function () {},
+                                    postMessage: function (data) {
+                                        globalThis[workerID].onmessage({ data: data });
+                                    },
+                                    onmessage: function () {},
+                                };
+
+                                let loc = browserApp.newURL(globalThis[workerID].url);
+                                globalThis[workerID].location = loc;
+                                globalThis.__define(globalThis[workerID], 'location', {
+                                    protocol: loc.protocol,
+                                    host: loc.host,
+                                    hostname: loc.hostname,
+                                    origin: loc.origin,
+                                    port: loc.port,
+                                    pathname: loc.pathname,
+                                    hash: loc.hash,
+                                    search: loc.search,
+                                    href: globalThis[workerID].url,
+                                    toString: function () {
+                                        return globalThis[workerID].url;
+                                    },
+                                });
+                                globalThis.__define(globalThis[workerID], 'window', {});
+                                globalThis.__define(globalThis[workerID], 'document', {});
+                                globalThis.__define(globalThis[workerID], 'trustedTypes', window.trustedTypes);
+
+                                globalThis.importScripts = globalThis[workerID].importScripts;
+                                return globalThis[workerID];
+                            }
+                        };
+
+                        globalThis.__define(globalThis.Worker, 'toString', function () {
+                            return 'Worker() { [native code] }';
+                        });
+                        globalThis.serviceWorker = {
+                            register: navigator.serviceWorker ? navigator.serviceWorker.register : {},
+                        };
+
+                        if (navigator.serviceWorker) {
+                            navigator.serviceWorker.register = function (...args) {
+                                return new Promise((resolve, reject) => {
+                                    let worker = new globalThis.Worker(...args);
+                                    resolve(worker);
+                                });
+                            };
+                        }
+                    }
+
+                    globalThis.defineProperty2 = Object.defineProperty;
+                    Object.defineProperty = function (o, p, d) {
+                        try {
+                            if (o === navigator) {
+                                if (p == 'platform') {
+                                    return o;
+                                }
+                                if (p == 'webdriver') {
+                                    globalThis.defineProperty2(navigator, p, d);
+                                    return o;
+                                }
+                                globalThis.defineProperty2(navigator._, p, d);
+                                return o;
+                            } else {
+                                // if (p == 'stack') {
+                                //     return o;
+                                // }
+                            }
+                            return globalThis.defineProperty2(o, p, d);
+                        } catch (error) {
+                            console.log(error);
+                            return o;
+                        }
+                    }.bind(Object.defineProperty);
+                }
+            }, obj);
+
+            if (obj.url) {
+                await page.goto(obj.url);
+            }
+            // await page.deleteCookie();
+            browserApp.puppeteerBrowser.allCookies = [];
+            browserApp.cookieInterval = setInterval(() => {
+                if (browserApp.puppeteerBrowser && !browserApp.puppeteerBrowser.disconnected) {
+                    browserApp.puppeteerBrowser.cookies().then((cookies) => {
+                        browserApp.puppeteerBrowser.allCookies = cookies;
+                    });
+                } else {
+                    clearInterval(browserApp.cookieInterval);
+                }
+            }, 1000 * 3);
+
+            return new Promise((resolve) => {
+                browserApp.puppeteerBrowser.on('disconnected', () => {
+                    browserApp.puppeteerBrowser.disconnected = true;
+                    resolve();
+                    // make problem and sign out of google and facebook
+                    //  browserApp.setSessionCookies({ cookies: browserApp.puppeteerBrowser.allCookies, partition: obj.partition });
+                    browserApp.puppeteerBrowser = null;
+                    // if (obj.windowID) {
+                    //     let win = browserApp.electron.BrowserWindow.fromId(obj.windowID);
+                    //     if (win && !win.isDestroyed()) {
+                    //         win.webContents.reload();
+                    //     }
+                    // }
+                });
+            });
+        } catch (error) {
+            browserApp.log(error);
+            return new Promise((resolve, reject) => {
+                reject(error);
+            });
+        }
+    };
+};

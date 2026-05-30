@@ -1,0 +1,2262 @@
+module.exports = function (owner) {
+    owner.XLSX = require('xlsx');
+    if ((fn = true)) {
+        owner.wait = function (resolve, reject) {
+            return new Promise((resolve, reject) => {});
+        };
+
+        owner.sleep = function (millis) {
+            return new Promise((resolve) => setTimeout(resolve, millis));
+        };
+
+        owner.randomNumber = function (min = 1, max = 1000) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        };
+
+        owner.handleProxy = function (proxy) {
+            if (!proxy) {
+                return null;
+            } else if (typeof proxy == 'string') {
+                proxy = {
+                    url: proxy.replaceAll('\\r', '').trim(),
+                };
+            }
+            if (typeof proxy == 'object') {
+                if (!proxy.ip) {
+                    if (proxy.url) {
+                        let arr = proxy.url.split('://');
+                        if (arr.length == 2) {
+                            proxy.protocal = arr[0];
+                            proxy.url = arr[1];
+                        }
+                    }
+                    let arr = proxy.url.split('@');
+                    if (arr.length == 2) {
+                        proxy.url = arr[1];
+                        let auth = arr[0];
+                        auth = auth.split(':');
+                        proxy.username = auth[0];
+                        proxy.password = auth[1];
+                    }
+                    let parts = proxy.url.split(':');
+                    proxy.ip = parts[0];
+                    proxy.port = parts[1];
+                    proxy.username = proxy.username || parts[2];
+                    proxy.password = proxy.password || parts[3];
+                }
+
+                if (!proxy.ip) {
+                    return null;
+                }
+
+                if (proxy.ip && !proxy.port) {
+                    proxy.port = 80;
+                }
+
+                if (!proxy.protocal && proxy.protocols && Array.isArray(proxy.protocols)) {
+                    proxy.protocal = proxy.protocols[0];
+                    proxy.protocols.forEach((p) => {
+                        proxy[p] = true;
+                    });
+                }
+
+                if ((resetProxyRules = true)) {
+                    proxy.proxyRules = '';
+                    let startline = '';
+
+                    if (proxy.socks4) {
+                        proxy.proxyRules += startline + 'socks4://' + proxy.ip + ':' + proxy.port;
+                        startline = ',';
+                    }
+                    if (proxy.socks5) {
+                        proxy.proxyRules += startline + 'socks5://' + proxy.ip + ':' + proxy.port;
+                        if (proxy.username && proxy.password && false) {
+                            proxy.proxyRules += startline + 'socks5://' + proxy.username + ':' + proxy.password + '@' + proxy.ip + ':' + proxy.port;
+                        }
+                        startline = ',';
+                    }
+                    if (proxy.ftp) {
+                        proxy.proxyRules += startline + 'ftp://' + proxy.ip + ':' + proxy.port;
+                        startline = ',';
+                    }
+                    if (proxy.http) {
+                        proxy.proxyRules += startline + 'http://' + proxy.ip + ':' + proxy.port;
+                        startline = ',';
+                    }
+                    if (proxy.https) {
+                        proxy.proxyRules += startline + 'https://' + proxy.ip + ':' + proxy.port;
+                        startline = ',';
+                    }
+                    if (!proxy.http && !proxy.https && !proxy.ftp && !proxy.socks5 && !proxy.socks4) {
+                        if (proxy.protocal) {
+                            proxy.proxyRules = proxy.protocal + '://' + proxy.ip + ':' + proxy.port;
+                        } else {
+                            proxy.proxyRules = proxy.ip + ':' + proxy.port;
+                        }
+                        startline = ',';
+                    }
+
+                    if (proxy.proxyRules && proxy.direct) {
+                        proxy.proxyRules += startline + 'direct://';
+                    }
+                }
+
+                proxy.url = proxy.ip + ':' + proxy.port;
+
+                if (proxy.protocal) {
+                    proxy.url = proxy.protocal + '://' + proxy.url;
+                }
+
+                proxy.mode = proxy.mode || 'fixed_servers';
+                proxy.proxyBypassRules = proxy.proxyBypassRules || proxy.ignore || 'localhost,127.0.0.1,::1,192.168.*';
+                return proxy;
+            }
+            return null;
+        };
+    }
+
+    if ((like = true)) {
+        owner.escapeRegExp = function (s) {
+            if (!s) {
+                return '';
+            }
+            if (typeof s !== 'string') {
+                s = s.toString();
+            }
+            return s.replace(/[\/\\^$*+?.()\[\]{}]/g, '\\$&');
+        };
+
+        if (!String.prototype.test) {
+            String.prototype.test = function (reg, flag = 'gium') {
+                try {
+                    return new RegExp(reg, flag).test(this);
+                } catch (error) {
+                    return false;
+                }
+            };
+        }
+
+        if (!String.prototype.like) {
+            String.prototype.like = function (name) {
+                if (!name) {
+                    return false;
+                }
+                let r = false;
+                name.split('|').forEach((n) => {
+                    n = n.split('*');
+                    n.forEach((w, i) => {
+                        n[i] = owner.escapeRegExp(w);
+                    });
+                    n = n.join('.*');
+                    if (this.test('^' + n + '$', 'gium')) {
+                        r = true;
+                    }
+                });
+                return r;
+            };
+        }
+
+        if (!String.prototype.contains) {
+            String.prototype.contains = function (name) {
+                return name.split('|').some((n) => n && this.test('^.*' + owner.escapeRegExp(n) + '.*$', 'gium'));
+            };
+        }
+        if (!String.prototype.contain) {
+            String.prototype.contain = function (name = '') {
+                return name.split('|').some((n) => n && this.test('^.*' + owner.escapeRegExp(n) + '.*$', 'gium'));
+            };
+        }
+    }
+
+    if ((vpc = true)) {
+        owner.effectiveTypeList = ['slow-2g', '2g', '3g', '4g', '5g'];
+        owner.timeZones = [
+            {
+                value: 'Dateline Standard Time',
+                abbr: 'DST',
+                offset: -12,
+                isdst: false,
+                text: '(UTC-12:00) International Date Line West',
+                utc: ['Etc/GMT+12'],
+            },
+            {
+                value: 'UTC-11',
+                abbr: 'U',
+                offset: -11,
+                isdst: false,
+                text: '(UTC-11:00) Coordinated Universal Time-11',
+                utc: ['Etc/GMT+11', 'Pacific/Midway', 'Pacific/Niue', 'Pacific/Pago_Pago'],
+            },
+            {
+                value: 'Hawaiian Standard Time',
+                abbr: 'HST',
+                offset: -10,
+                isdst: false,
+                text: '(UTC-10:00) Hawaii',
+                utc: ['Etc/GMT+10', 'Pacific/Honolulu', 'Pacific/Johnston', 'Pacific/Rarotonga', 'Pacific/Tahiti'],
+            },
+            {
+                value: 'Alaskan Standard Time',
+                abbr: 'AKDT',
+                offset: -8,
+                isdst: true,
+                text: '(UTC-09:00) Alaska',
+                utc: ['America/Anchorage', 'America/Juneau', 'America/Nome', 'America/Sitka', 'America/Yakutat'],
+            },
+            {
+                value: 'Pacific Standard Time (Mexico)',
+                abbr: 'PDT',
+                offset: -7,
+                isdst: true,
+                text: '(UTC-08:00) Baja California',
+                utc: ['America/Santa_Isabel'],
+            },
+            {
+                value: 'Pacific Daylight Time',
+                abbr: 'PDT',
+                offset: -7,
+                isdst: true,
+                text: '(UTC-07:00) Pacific Daylight Time (US & Canada)',
+                utc: ['America/Los_Angeles', 'America/Tijuana', 'America/Vancouver'],
+            },
+            {
+                value: 'Pacific Standard Time',
+                abbr: 'PST',
+                offset: -8,
+                isdst: false,
+                text: '(UTC-08:00) Pacific Standard Time (US & Canada)',
+                utc: ['America/Los_Angeles', 'America/Tijuana', 'America/Vancouver', 'PST8PDT'],
+            },
+            {
+                value: 'US Mountain Standard Time',
+                abbr: 'UMST',
+                offset: -7,
+                isdst: false,
+                text: '(UTC-07:00) Arizona',
+                utc: ['America/Creston', 'America/Dawson', 'America/Dawson_Creek', 'America/Hermosillo', 'America/Phoenix', 'America/Whitehorse', 'Etc/GMT+7'],
+            },
+            {
+                value: 'Mountain Standard Time (Mexico)',
+                abbr: 'MDT',
+                offset: -6,
+                isdst: true,
+                text: '(UTC-07:00) Chihuahua, La Paz, Mazatlan',
+                utc: ['America/Chihuahua', 'America/Mazatlan'],
+            },
+            {
+                value: 'Mountain Standard Time',
+                abbr: 'MDT',
+                offset: -6,
+                isdst: true,
+                text: '(UTC-07:00) Mountain Time (US & Canada)',
+                utc: ['America/Boise', 'America/Cambridge_Bay', 'America/Denver', 'America/Edmonton', 'America/Inuvik', 'America/Ojinaga', 'America/Yellowknife', 'MST7MDT'],
+            },
+            {
+                value: 'Central America Standard Time',
+                abbr: 'CAST',
+                offset: -6,
+                isdst: false,
+                text: '(UTC-06:00) Central America',
+                utc: ['America/Belize', 'America/Costa_Rica', 'America/El_Salvador', 'America/Guatemala', 'America/Managua', 'America/Tegucigalpa', 'Etc/GMT+6', 'Pacific/Galapagos'],
+            },
+            {
+                value: 'Central Standard Time',
+                abbr: 'CDT',
+                offset: -5,
+                isdst: true,
+                text: '(UTC-06:00) Central Time (US & Canada)',
+                utc: [
+                    'America/Chicago',
+                    'America/Indiana/Knox',
+                    'America/Indiana/Tell_City',
+                    'America/Matamoros',
+                    'America/Menominee',
+                    'America/North_Dakota/Beulah',
+                    'America/North_Dakota/Center',
+                    'America/North_Dakota/New_Salem',
+                    'America/Rainy_River',
+                    'America/Rankin_Inlet',
+                    'America/Resolute',
+                    'America/Winnipeg',
+                    'CST6CDT',
+                ],
+            },
+            {
+                value: 'Central Standard Time (Mexico)',
+                abbr: 'CDT',
+                offset: -5,
+                isdst: true,
+                text: '(UTC-06:00) Guadalajara, Mexico City, Monterrey',
+                utc: ['America/Bahia_Banderas', 'America/Cancun', 'America/Merida', 'America/Mexico_City', 'America/Monterrey'],
+            },
+            {
+                value: 'Canada Central Standard Time',
+                abbr: 'CCST',
+                offset: -6,
+                isdst: false,
+                text: '(UTC-06:00) Saskatchewan',
+                utc: ['America/Regina', 'America/Swift_Current'],
+            },
+            {
+                value: 'SA Pacific Standard Time',
+                abbr: 'SPST',
+                offset: -5,
+                isdst: false,
+                text: '(UTC-05:00) Bogota, Lima, Quito',
+                utc: [
+                    'America/Bogota',
+                    'America/Cayman',
+                    'America/Coral_Harbour',
+                    'America/Eirunepe',
+                    'America/Guayaquil',
+                    'America/Jamaica',
+                    'America/Lima',
+                    'America/Panama',
+                    'America/Rio_Branco',
+                    'Etc/GMT+5',
+                ],
+            },
+            {
+                value: 'Eastern Standard Time',
+                abbr: 'EST',
+                offset: -5,
+                isdst: false,
+                text: '(UTC-05:00) Eastern Time (US & Canada)',
+                utc: [
+                    'America/Detroit',
+                    'America/Havana',
+                    'America/Indiana/Petersburg',
+                    'America/Indiana/Vincennes',
+                    'America/Indiana/Winamac',
+                    'America/Iqaluit',
+                    'America/Kentucky/Monticello',
+                    'America/Louisville',
+                    'America/Montreal',
+                    'America/Nassau',
+                    'America/New_York',
+                    'America/Nipigon',
+                    'America/Pangnirtung',
+                    'America/Port-au-Prince',
+                    'America/Thunder_Bay',
+                    'America/Toronto',
+                ],
+            },
+            {
+                value: 'Eastern Daylight Time',
+                abbr: 'EDT',
+                offset: -4,
+                isdst: true,
+                text: '(UTC-04:00) Eastern Daylight Time (US & Canada)',
+                utc: [
+                    'America/Detroit',
+                    'America/Havana',
+                    'America/Indiana/Petersburg',
+                    'America/Indiana/Vincennes',
+                    'America/Indiana/Winamac',
+                    'America/Iqaluit',
+                    'America/Kentucky/Monticello',
+                    'America/Louisville',
+                    'America/Montreal',
+                    'America/Nassau',
+                    'America/New_York',
+                    'America/Nipigon',
+                    'America/Pangnirtung',
+                    'America/Port-au-Prince',
+                    'America/Thunder_Bay',
+                    'America/Toronto',
+                ],
+            },
+            {
+                value: 'US Eastern Standard Time',
+                abbr: 'UEDT',
+                offset: -5,
+                isdst: false,
+                text: '(UTC-05:00) Indiana (East)',
+                utc: ['America/Indiana/Marengo', 'America/Indiana/Vevay', 'America/Indianapolis'],
+            },
+            {
+                value: 'Venezuela Standard Time',
+                abbr: 'VST',
+                offset: -4.5,
+                isdst: false,
+                text: '(UTC-04:30) Caracas',
+                utc: ['America/Caracas'],
+            },
+            {
+                value: 'Paraguay Standard Time',
+                abbr: 'PYT',
+                offset: -4,
+                isdst: false,
+                text: '(UTC-04:00) Asuncion',
+                utc: ['America/Asuncion'],
+            },
+            {
+                value: 'Atlantic Standard Time',
+                abbr: 'ADT',
+                offset: -3,
+                isdst: true,
+                text: '(UTC-04:00) Atlantic Time (Canada)',
+                utc: ['America/Glace_Bay', 'America/Goose_Bay', 'America/Halifax', 'America/Moncton', 'America/Thule', 'Atlantic/Bermuda'],
+            },
+            {
+                value: 'Central Brazilian Standard Time',
+                abbr: 'CBST',
+                offset: -4,
+                isdst: false,
+                text: '(UTC-04:00) Cuiaba',
+                utc: ['America/Campo_Grande', 'America/Cuiaba'],
+            },
+            {
+                value: 'SA Western Standard Time',
+                abbr: 'SWST',
+                offset: -4,
+                isdst: false,
+                text: '(UTC-04:00) Georgetown, La Paz, Manaus, San Juan',
+                utc: [
+                    'America/Anguilla',
+                    'America/Antigua',
+                    'America/Aruba',
+                    'America/Barbados',
+                    'America/Blanc-Sablon',
+                    'America/Boa_Vista',
+                    'America/Curacao',
+                    'America/Dominica',
+                    'America/Grand_Turk',
+                    'America/Grenada',
+                    'America/Guadeloupe',
+                    'America/Guyana',
+                    'America/Kralendijk',
+                    'America/La_Paz',
+                    'America/Lower_Princes',
+                    'America/Manaus',
+                    'America/Marigot',
+                    'America/Martinique',
+                    'America/Montserrat',
+                    'America/Port_of_Spain',
+                    'America/Porto_Velho',
+                    'America/Puerto_Rico',
+                    'America/Santo_Domingo',
+                    'America/St_Barthelemy',
+                    'America/St_Kitts',
+                    'America/St_Lucia',
+                    'America/St_Thomas',
+                    'America/St_Vincent',
+                    'America/Tortola',
+                    'Etc/GMT+4',
+                ],
+            },
+            {
+                value: 'Pacific SA Standard Time',
+                abbr: 'PSST',
+                offset: -4,
+                isdst: false,
+                text: '(UTC-04:00) Santiago',
+                utc: ['America/Santiago', 'Antarctica/Palmer'],
+            },
+            {
+                value: 'Newfoundland Standard Time',
+                abbr: 'NDT',
+                offset: -2.5,
+                isdst: true,
+                text: '(UTC-03:30) Newfoundland',
+                utc: ['America/St_Johns'],
+            },
+            {
+                value: 'E. South America Standard Time',
+                abbr: 'ESAST',
+                offset: -3,
+                isdst: false,
+                text: '(UTC-03:00) Brasilia',
+                utc: ['America/Sao_Paulo'],
+            },
+            {
+                value: 'Argentina Standard Time',
+                abbr: 'AST',
+                offset: -3,
+                isdst: false,
+                text: '(UTC-03:00) Buenos Aires',
+                utc: [
+                    'America/Argentina/Buenos_Aires',
+                    'America/Argentina/Catamarca',
+                    'America/Argentina/Cordoba',
+                    'America/Argentina/Jujuy',
+                    'America/Argentina/La_Rioja',
+                    'America/Argentina/Mendoza',
+                    'America/Argentina/Rio_Gallegos',
+                    'America/Argentina/Salta',
+                    'America/Argentina/San_Juan',
+                    'America/Argentina/San_Luis',
+                    'America/Argentina/Tucuman',
+                    'America/Argentina/Ushuaia',
+                    'America/Buenos_Aires',
+                    'America/Catamarca',
+                    'America/Cordoba',
+                    'America/Jujuy',
+                    'America/Mendoza',
+                ],
+            },
+            {
+                value: 'SA Eastern Standard Time',
+                abbr: 'SEST',
+                offset: -3,
+                isdst: false,
+                text: '(UTC-03:00) Cayenne, Fortaleza',
+                utc: [
+                    'America/Araguaina',
+                    'America/Belem',
+                    'America/Cayenne',
+                    'America/Fortaleza',
+                    'America/Maceio',
+                    'America/Paramaribo',
+                    'America/Recife',
+                    'America/Santarem',
+                    'Antarctica/Rothera',
+                    'Atlantic/Stanley',
+                    'Etc/GMT+3',
+                ],
+            },
+            {
+                value: 'Greenland Standard Time',
+                abbr: 'GDT',
+                offset: -3,
+                isdst: true,
+                text: '(UTC-03:00) Greenland',
+                utc: ['America/Godthab'],
+            },
+            {
+                value: 'Montevideo Standard Time',
+                abbr: 'MST',
+                offset: -3,
+                isdst: false,
+                text: '(UTC-03:00) Montevideo',
+                utc: ['America/Montevideo'],
+            },
+            {
+                value: 'Bahia Standard Time',
+                abbr: 'BST',
+                offset: -3,
+                isdst: false,
+                text: '(UTC-03:00) Salvador',
+                utc: ['America/Bahia'],
+            },
+            {
+                value: 'UTC-02',
+                abbr: 'U',
+                offset: -2,
+                isdst: false,
+                text: '(UTC-02:00) Coordinated Universal Time-02',
+                utc: ['America/Noronha', 'Atlantic/South_Georgia', 'Etc/GMT+2'],
+            },
+            {
+                value: 'Mid-Atlantic Standard Time',
+                abbr: 'MDT',
+                offset: -1,
+                isdst: true,
+                text: '(UTC-02:00) Mid-Atlantic - Old',
+                utc: [],
+            },
+            {
+                value: 'Azores Standard Time',
+                abbr: 'ADT',
+                offset: 0,
+                isdst: true,
+                text: '(UTC-01:00) Azores',
+                utc: ['America/Scoresbysund', 'Atlantic/Azores'],
+            },
+            {
+                value: 'Cape Verde Standard Time',
+                abbr: 'CVST',
+                offset: -1,
+                isdst: false,
+                text: '(UTC-01:00) Cape Verde Is.',
+                utc: ['Atlantic/Cape_Verde', 'Etc/GMT+1'],
+            },
+            {
+                value: 'Morocco Standard Time',
+                abbr: 'MDT',
+                offset: 1,
+                isdst: true,
+                text: '(UTC) Casablanca',
+                utc: ['Africa/Casablanca', 'Africa/El_Aaiun'],
+            },
+            {
+                value: 'UTC',
+                abbr: 'UTC',
+                offset: 0,
+                isdst: false,
+                text: '(UTC) Coordinated Universal Time',
+                utc: ['America/Danmarkshavn', 'Etc/GMT'],
+            },
+            {
+                value: 'GMT Standard Time',
+                abbr: 'GMT',
+                offset: 0,
+                isdst: false,
+                text: '(UTC) Edinburgh, London',
+                utc: ['Europe/Isle_of_Man', 'Europe/Guernsey', 'Europe/Jersey', 'Europe/London'],
+            },
+            {
+                value: 'British Summer Time',
+                abbr: 'BST',
+                offset: 1,
+                isdst: true,
+                text: '(UTC+01:00) Edinburgh, London',
+                utc: ['Europe/Isle_of_Man', 'Europe/Guernsey', 'Europe/Jersey', 'Europe/London'],
+            },
+            {
+                value: 'GMT Standard Time',
+                abbr: 'GDT',
+                offset: 1,
+                isdst: true,
+                text: '(UTC) Dublin, Lisbon',
+                utc: ['Atlantic/Canary', 'Atlantic/Faeroe', 'Atlantic/Madeira', 'Europe/Dublin', 'Europe/Lisbon'],
+            },
+            {
+                value: 'Greenwich Standard Time',
+                abbr: 'GST',
+                offset: 0,
+                isdst: false,
+                text: '(UTC) Monrovia, Reykjavik',
+                utc: [
+                    'Africa/Abidjan',
+                    'Africa/Accra',
+                    'Africa/Bamako',
+                    'Africa/Banjul',
+                    'Africa/Bissau',
+                    'Africa/Conakry',
+                    'Africa/Dakar',
+                    'Africa/Freetown',
+                    'Africa/Lome',
+                    'Africa/Monrovia',
+                    'Africa/Nouakchott',
+                    'Africa/Ouagadougou',
+                    'Africa/Sao_Tome',
+                    'Atlantic/Reykjavik',
+                    'Atlantic/St_Helena',
+                ],
+            },
+            {
+                value: 'W. Europe Standard Time',
+                abbr: 'WEDT',
+                offset: 2,
+                isdst: true,
+                text: '(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna',
+                utc: [
+                    'Arctic/Longyearbyen',
+                    'Europe/Amsterdam',
+                    'Europe/Andorra',
+                    'Europe/Berlin',
+                    'Europe/Busingen',
+                    'Europe/Gibraltar',
+                    'Europe/Luxembourg',
+                    'Europe/Malta',
+                    'Europe/Monaco',
+                    'Europe/Oslo',
+                    'Europe/Rome',
+                    'Europe/San_Marino',
+                    'Europe/Stockholm',
+                    'Europe/Vaduz',
+                    'Europe/Vatican',
+                    'Europe/Vienna',
+                    'Europe/Zurich',
+                ],
+            },
+            {
+                value: 'Central Europe Standard Time',
+                abbr: 'CEDT',
+                offset: 2,
+                isdst: true,
+                text: '(UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague',
+                utc: ['Europe/Belgrade', 'Europe/Bratislava', 'Europe/Budapest', 'Europe/Ljubljana', 'Europe/Podgorica', 'Europe/Prague', 'Europe/Tirane'],
+            },
+            {
+                value: 'Romance Standard Time',
+                abbr: 'RDT',
+                offset: 2,
+                isdst: true,
+                text: '(UTC+01:00) Brussels, Copenhagen, Madrid, Paris',
+                utc: ['Africa/Ceuta', 'Europe/Brussels', 'Europe/Copenhagen', 'Europe/Madrid', 'Europe/Paris'],
+            },
+            {
+                value: 'Central European Standard Time',
+                abbr: 'CEDT',
+                offset: 2,
+                isdst: true,
+                text: '(UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb',
+                utc: ['Europe/Sarajevo', 'Europe/Skopje', 'Europe/Warsaw', 'Europe/Zagreb'],
+            },
+            {
+                value: 'W. Central Africa Standard Time',
+                abbr: 'WCAST',
+                offset: 1,
+                isdst: false,
+                text: '(UTC+01:00) West Central Africa',
+                utc: [
+                    'Africa/Algiers',
+                    'Africa/Bangui',
+                    'Africa/Brazzaville',
+                    'Africa/Douala',
+                    'Africa/Kinshasa',
+                    'Africa/Lagos',
+                    'Africa/Libreville',
+                    'Africa/Luanda',
+                    'Africa/Malabo',
+                    'Africa/Ndjamena',
+                    'Africa/Niamey',
+                    'Africa/Porto-Novo',
+                    'Africa/Tunis',
+                    'Etc/GMT-1',
+                ],
+            },
+            {
+                value: 'Namibia Standard Time',
+                abbr: 'NST',
+                offset: 1,
+                isdst: false,
+                text: '(UTC+01:00) Windhoek',
+                utc: ['Africa/Windhoek'],
+            },
+            {
+                value: 'GTB Standard Time',
+                abbr: 'GDT',
+                offset: 3,
+                isdst: true,
+                text: '(UTC+02:00) Athens, Bucharest',
+                utc: ['Asia/Nicosia', 'Europe/Athens', 'Europe/Bucharest', 'Europe/Chisinau'],
+            },
+            {
+                value: 'Middle East Standard Time',
+                abbr: 'MEDT',
+                offset: 3,
+                isdst: true,
+                text: '(UTC+02:00) Beirut',
+                utc: ['Asia/Beirut'],
+            },
+            {
+                value: 'Egypt Standard Time',
+                abbr: 'EST',
+                offset: 3,
+                isdst: false,
+                text: '(UTC+03:00) Cairo',
+                utc: ['Africa/Cairo'],
+            },
+            {
+                value: 'Syria Standard Time',
+                abbr: 'SDT',
+                offset: 3,
+                isdst: false,
+                text: '(UTC+02:00) Damascus',
+                utc: ['Asia/Damascus'],
+            },
+            {
+                value: 'E. Europe Standard Time',
+                abbr: 'EEDT',
+                offset: 3,
+                isdst: true,
+                text: '(UTC+02:00) E. Europe',
+                utc: [
+                    'Asia/Nicosia',
+                    'Europe/Athens',
+                    'Europe/Bucharest',
+                    'Europe/Chisinau',
+                    'Europe/Helsinki',
+                    'Europe/Kyiv',
+                    'Europe/Mariehamn',
+                    'Europe/Nicosia',
+                    'Europe/Riga',
+                    'Europe/Sofia',
+                    'Europe/Tallinn',
+                    'Europe/Uzhhorod',
+                    'Europe/Vilnius',
+                    'Europe/Zaporizhzhia',
+                ],
+            },
+            {
+                value: 'South Africa Standard Time',
+                abbr: 'SAST',
+                offset: 2,
+                isdst: false,
+                text: '(UTC+02:00) Harare, Pretoria',
+                utc: [
+                    'Africa/Blantyre',
+                    'Africa/Bujumbura',
+                    'Africa/Gaborone',
+                    'Africa/Harare',
+                    'Africa/Johannesburg',
+                    'Africa/Kigali',
+                    'Africa/Lubumbashi',
+                    'Africa/Lusaka',
+                    'Africa/Maputo',
+                    'Africa/Maseru',
+                    'Africa/Mbabane',
+                    'Etc/GMT-2',
+                ],
+            },
+            {
+                value: 'FLE Standard Time',
+                abbr: 'FDT',
+                offset: 3,
+                isdst: true,
+                text: '(UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius',
+                utc: ['Europe/Helsinki', 'Europe/Kyiv', 'Europe/Mariehamn', 'Europe/Riga', 'Europe/Sofia', 'Europe/Tallinn', 'Europe/Uzhhorod', 'Europe/Vilnius', 'Europe/Zaporizhzhia'],
+            },
+            {
+                value: 'Turkey Standard Time',
+                abbr: 'TDT',
+                offset: 3,
+                isdst: false,
+                text: '(UTC+03:00) Istanbul',
+                utc: ['Europe/Istanbul'],
+            },
+            {
+                value: 'Israel Standard Time',
+                abbr: 'JDT',
+                offset: 3,
+                isdst: true,
+                text: '(UTC+02:00) Jerusalem',
+                utc: ['Asia/Jerusalem'],
+            },
+            {
+                value: 'Libya Standard Time',
+                abbr: 'LST',
+                offset: 2,
+                isdst: false,
+                text: '(UTC+02:00) Tripoli',
+                utc: ['Africa/Tripoli'],
+            },
+            {
+                value: 'Jordan Standard Time',
+                abbr: 'JST',
+                offset: 3,
+                isdst: false,
+                text: '(UTC+03:00) Amman',
+                utc: ['Asia/Amman'],
+            },
+            {
+                value: 'Arabic Standard Time',
+                abbr: 'AST',
+                offset: 3,
+                isdst: false,
+                text: '(UTC+03:00) Baghdad',
+                utc: ['Asia/Baghdad'],
+            },
+            {
+                value: 'Kaliningrad Standard Time',
+                abbr: 'KST',
+                offset: 3,
+                isdst: false,
+                text: '(UTC+02:00) Kaliningrad',
+                utc: ['Europe/Kaliningrad'],
+            },
+            {
+                value: 'Arab Standard Time',
+                abbr: 'AST',
+                offset: 3,
+                isdst: false,
+                text: '(UTC+03:00) Kuwait, Riyadh',
+                utc: ['Asia/Aden', 'Asia/Bahrain', 'Asia/Kuwait', 'Asia/Qatar', 'Asia/Riyadh'],
+            },
+            {
+                value: 'E. Africa Standard Time',
+                abbr: 'EAST',
+                offset: 3,
+                isdst: false,
+                text: '(UTC+03:00) Nairobi',
+                utc: [
+                    'Africa/Addis_Ababa',
+                    'Africa/Asmera',
+                    'Africa/Dar_es_Salaam',
+                    'Africa/Djibouti',
+                    'Africa/Juba',
+                    'Africa/Kampala',
+                    'Africa/Khartoum',
+                    'Africa/Mogadishu',
+                    'Africa/Nairobi',
+                    'Antarctica/Syowa',
+                    'Etc/GMT-3',
+                    'Indian/Antananarivo',
+                    'Indian/Comoro',
+                    'Indian/Mayotte',
+                ],
+            },
+            {
+                value: 'Moscow Standard Time',
+                abbr: 'MSK',
+                offset: 3,
+                isdst: false,
+                text: '(UTC+03:00) Moscow, St. Petersburg, Volgograd, Minsk',
+                utc: ['Europe/Kirov', 'Europe/Moscow', 'Europe/Simferopol', 'Europe/Volgograd', 'Europe/Minsk'],
+            },
+            {
+                value: 'Samara Time',
+                abbr: 'SAMT',
+                offset: 4,
+                isdst: false,
+                text: '(UTC+04:00) Samara, Ulyanovsk, Saratov',
+                utc: ['Europe/Astrakhan', 'Europe/Samara', 'Europe/Ulyanovsk'],
+            },
+            {
+                value: 'Iran Standard Time',
+                abbr: 'IDT',
+                offset: 4.5,
+                isdst: true,
+                text: '(UTC+03:30) Tehran',
+                utc: ['Asia/Tehran'],
+            },
+            {
+                value: 'Arabian Standard Time',
+                abbr: 'AST',
+                offset: 4,
+                isdst: false,
+                text: '(UTC+04:00) Abu Dhabi, Muscat',
+                utc: ['Asia/Dubai', 'Asia/Muscat', 'Etc/GMT-4'],
+            },
+            {
+                value: 'Azerbaijan Standard Time',
+                abbr: 'ADT',
+                offset: 5,
+                isdst: true,
+                text: '(UTC+04:00) Baku',
+                utc: ['Asia/Baku'],
+            },
+            {
+                value: 'Mauritius Standard Time',
+                abbr: 'MST',
+                offset: 4,
+                isdst: false,
+                text: '(UTC+04:00) Port Louis',
+                utc: ['Indian/Mahe', 'Indian/Mauritius', 'Indian/Reunion'],
+            },
+            {
+                value: 'Georgian Standard Time',
+                abbr: 'GET',
+                offset: 4,
+                isdst: false,
+                text: '(UTC+04:00) Tbilisi',
+                utc: ['Asia/Tbilisi'],
+            },
+            {
+                value: 'Caucasus Standard Time',
+                abbr: 'CST',
+                offset: 4,
+                isdst: false,
+                text: '(UTC+04:00) Yerevan',
+                utc: ['Asia/Yerevan'],
+            },
+            {
+                value: 'Afghanistan Standard Time',
+                abbr: 'AST',
+                offset: 4.5,
+                isdst: false,
+                text: '(UTC+04:30) Kabul',
+                utc: ['Asia/Kabul'],
+            },
+            {
+                value: 'West Asia Standard Time',
+                abbr: 'WAST',
+                offset: 5,
+                isdst: false,
+                text: '(UTC+05:00) Ashgabat, Tashkent',
+                utc: [
+                    'Antarctica/Mawson',
+                    'Asia/Aqtau',
+                    'Asia/Aqtobe',
+                    'Asia/Ashgabat',
+                    'Asia/Dushanbe',
+                    'Asia/Oral',
+                    'Asia/Samarkand',
+                    'Asia/Tashkent',
+                    'Etc/GMT-5',
+                    'Indian/Kerguelen',
+                    'Indian/Maldives',
+                ],
+            },
+            {
+                value: 'Yekaterinburg Time',
+                abbr: 'YEKT',
+                offset: 5,
+                isdst: false,
+                text: '(UTC+05:00) Yekaterinburg',
+                utc: ['Asia/Yekaterinburg'],
+            },
+            {
+                value: 'Pakistan Standard Time',
+                abbr: 'PKT',
+                offset: 5,
+                isdst: false,
+                text: '(UTC+05:00) Islamabad, Karachi',
+                utc: ['Asia/Karachi'],
+            },
+            {
+                value: 'India Standard Time',
+                abbr: 'IST',
+                offset: 5.5,
+                isdst: false,
+                text: '(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi',
+                utc: ['Asia/Kolkata', 'Asia/Calcutta'],
+            },
+            {
+                value: 'Sri Lanka Standard Time',
+                abbr: 'SLST',
+                offset: 5.5,
+                isdst: false,
+                text: '(UTC+05:30) Sri Jayawardenepura',
+                utc: ['Asia/Colombo'],
+            },
+            {
+                value: 'Nepal Standard Time',
+                abbr: 'NST',
+                offset: 5.75,
+                isdst: false,
+                text: '(UTC+05:45) Kathmandu',
+                utc: ['Asia/Kathmandu'],
+            },
+            {
+                value: 'Central Asia Standard Time',
+                abbr: 'CAST',
+                offset: 6,
+                isdst: false,
+                text: '(UTC+06:00) Nur-Sultan (Astana)',
+                utc: ['Antarctica/Vostok', 'Asia/Almaty', 'Asia/Bishkek', 'Asia/Qyzylorda', 'Asia/Urumqi', 'Etc/GMT-6', 'Indian/Chagos'],
+            },
+            {
+                value: 'Bangladesh Standard Time',
+                abbr: 'BST',
+                offset: 6,
+                isdst: false,
+                text: '(UTC+06:00) Dhaka',
+                utc: ['Asia/Dhaka', 'Asia/Thimphu'],
+            },
+            {
+                value: 'Myanmar Standard Time',
+                abbr: 'MST',
+                offset: 6.5,
+                isdst: false,
+                text: '(UTC+06:30) Yangon (Rangoon)',
+                utc: ['Asia/Rangoon', 'Indian/Cocos'],
+            },
+            {
+                value: 'SE Asia Standard Time',
+                abbr: 'SAST',
+                offset: 7,
+                isdst: false,
+                text: '(UTC+07:00) Bangkok, Hanoi, Jakarta',
+                utc: ['Antarctica/Davis', 'Asia/Bangkok', 'Asia/Hovd', 'Asia/Jakarta', 'Asia/Phnom_Penh', 'Asia/Pontianak', 'Asia/Saigon', 'Asia/Vientiane', 'Etc/GMT-7', 'Indian/Christmas'],
+            },
+            {
+                value: 'N. Central Asia Standard Time',
+                abbr: 'NCAST',
+                offset: 7,
+                isdst: false,
+                text: '(UTC+07:00) Novosibirsk',
+                utc: ['Asia/Novokuznetsk', 'Asia/Novosibirsk', 'Asia/Omsk', 'Asia/Tomsk'],
+            },
+            {
+                value: 'China Standard Time',
+                abbr: 'CST',
+                offset: 8,
+                isdst: false,
+                text: '(UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi',
+                utc: ['Asia/Hong_Kong', 'Asia/Macau', 'Asia/Shanghai'],
+            },
+            {
+                value: 'North Asia Standard Time',
+                abbr: 'NAST',
+                offset: 8,
+                isdst: false,
+                text: '(UTC+08:00) Krasnoyarsk',
+                utc: ['Asia/Krasnoyarsk'],
+            },
+            {
+                value: 'Singapore Standard Time',
+                abbr: 'MPST',
+                offset: 8,
+                isdst: false,
+                text: '(UTC+08:00) Kuala Lumpur, Singapore',
+                utc: ['Asia/Brunei', 'Asia/Kuala_Lumpur', 'Asia/Kuching', 'Asia/Makassar', 'Asia/Manila', 'Asia/Singapore', 'Etc/GMT-8'],
+            },
+            {
+                value: 'W. Australia Standard Time',
+                abbr: 'WAST',
+                offset: 8,
+                isdst: false,
+                text: '(UTC+08:00) Perth',
+                utc: ['Antarctica/Casey', 'Australia/Perth'],
+            },
+            {
+                value: 'Taipei Standard Time',
+                abbr: 'TST',
+                offset: 8,
+                isdst: false,
+                text: '(UTC+08:00) Taipei',
+                utc: ['Asia/Taipei'],
+            },
+            {
+                value: 'Ulaanbaatar Standard Time',
+                abbr: 'UST',
+                offset: 8,
+                isdst: false,
+                text: '(UTC+08:00) Ulaanbaatar',
+                utc: ['Asia/Choibalsan', 'Asia/Ulaanbaatar'],
+            },
+            {
+                value: 'North Asia East Standard Time',
+                abbr: 'NAEST',
+                offset: 8,
+                isdst: false,
+                text: '(UTC+08:00) Irkutsk',
+                utc: ['Asia/Irkutsk'],
+            },
+            {
+                value: 'Japan Standard Time',
+                abbr: 'JST',
+                offset: 9,
+                isdst: false,
+                text: '(UTC+09:00) Osaka, Sapporo, Tokyo',
+                utc: ['Asia/Dili', 'Asia/Jayapura', 'Asia/Tokyo', 'Etc/GMT-9', 'Pacific/Palau'],
+            },
+            {
+                value: 'Korea Standard Time',
+                abbr: 'KST',
+                offset: 9,
+                isdst: false,
+                text: '(UTC+09:00) Seoul',
+                utc: ['Asia/Pyongyang', 'Asia/Seoul'],
+            },
+            {
+                value: 'Cen. Australia Standard Time',
+                abbr: 'CAST',
+                offset: 9.5,
+                isdst: false,
+                text: '(UTC+09:30) Adelaide',
+                utc: ['Australia/Adelaide', 'Australia/Broken_Hill'],
+            },
+            {
+                value: 'AUS Central Standard Time',
+                abbr: 'ACST',
+                offset: 9.5,
+                isdst: false,
+                text: '(UTC+09:30) Darwin',
+                utc: ['Australia/Darwin'],
+            },
+            {
+                value: 'E. Australia Standard Time',
+                abbr: 'EAST',
+                offset: 10,
+                isdst: false,
+                text: '(UTC+10:00) Brisbane',
+                utc: ['Australia/Brisbane', 'Australia/Lindeman'],
+            },
+            {
+                value: 'AUS Eastern Standard Time',
+                abbr: 'AEST',
+                offset: 10,
+                isdst: false,
+                text: '(UTC+10:00) Canberra, Melbourne, Sydney',
+                utc: ['Australia/Melbourne', 'Australia/Sydney'],
+            },
+            {
+                value: 'West Pacific Standard Time',
+                abbr: 'WPST',
+                offset: 10,
+                isdst: false,
+                text: '(UTC+10:00) Guam, Port Moresby',
+                utc: ['Antarctica/DumontDUrville', 'Etc/GMT-10', 'Pacific/Guam', 'Pacific/Port_Moresby', 'Pacific/Saipan', 'Pacific/Truk'],
+            },
+            {
+                value: 'Tasmania Standard Time',
+                abbr: 'TST',
+                offset: 10,
+                isdst: false,
+                text: '(UTC+10:00) Hobart',
+                utc: ['Australia/Currie', 'Australia/Hobart'],
+            },
+            {
+                value: 'Yakutsk Standard Time',
+                abbr: 'YST',
+                offset: 9,
+                isdst: false,
+                text: '(UTC+09:00) Yakutsk',
+                utc: ['Asia/Chita', 'Asia/Khandyga', 'Asia/Yakutsk'],
+            },
+            {
+                value: 'Central Pacific Standard Time',
+                abbr: 'CPST',
+                offset: 11,
+                isdst: false,
+                text: '(UTC+11:00) Solomon Is., New Caledonia',
+                utc: ['Antarctica/Macquarie', 'Etc/GMT-11', 'Pacific/Efate', 'Pacific/Guadalcanal', 'Pacific/Kosrae', 'Pacific/Noumea', 'Pacific/Ponape'],
+            },
+            {
+                value: 'Vladivostok Standard Time',
+                abbr: 'VLAT',
+                offset: 10,
+                isdst: false,
+                text: '(UTC+10:00) Vladivostok',
+                utc: ['Asia/Ust-Nera', 'Asia/Vladivostok'],
+            },
+            {
+                value: 'Sakhalin Standard Time',
+                abbr: 'SAKT',
+                offset: 11,
+                isdst: false,
+                text: '(UTC+11:00) Sakhalin',
+                utc: ['Asia/Sakhalin'],
+            },
+
+            {
+                value: 'New Zealand Standard Time',
+                abbr: 'NZST',
+                offset: 12,
+                isdst: false,
+                text: '(UTC+12:00) Auckland, Wellington',
+                utc: ['Antarctica/McMurdo', 'Pacific/Auckland'],
+            },
+            {
+                value: 'UTC+12',
+                abbr: 'U',
+                offset: 12,
+                isdst: false,
+                text: '(UTC+12:00) Coordinated Universal Time+12',
+                utc: ['Etc/GMT-12', 'Pacific/Funafuti', 'Pacific/Kwajalein', 'Pacific/Majuro', 'Pacific/Nauru', 'Pacific/Tarawa', 'Pacific/Wake', 'Pacific/Wallis'],
+            },
+            {
+                value: 'Fiji Standard Time',
+                abbr: 'FST',
+                offset: 12,
+                isdst: false,
+                text: '(UTC+12:00) Fiji',
+                utc: ['Pacific/Fiji'],
+            },
+            {
+                value: 'Magadan Standard Time',
+                abbr: 'MST',
+                offset: 12,
+                isdst: false,
+                text: '(UTC+12:00) Magadan',
+                utc: ['Asia/Anadyr', 'Asia/Kamchatka', 'Asia/Magadan', 'Asia/Srednekolymsk'],
+            },
+            {
+                value: 'Kamchatka Standard Time',
+                abbr: 'KDT',
+                offset: 13,
+                isdst: true,
+                text: '(UTC+12:00) Petropavlovsk-Kamchatsky - Old',
+                utc: ['Asia/Kamchatka'],
+            },
+            {
+                value: 'Tonga Standard Time',
+                abbr: 'TST',
+                offset: 13,
+                isdst: false,
+                text: "(UTC+13:00) Nuku'alofa",
+                utc: ['Etc/GMT-13', 'Pacific/Enderbury', 'Pacific/Fakaofo', 'Pacific/Tongatapu'],
+            },
+            {
+                value: 'Samoa Standard Time',
+                abbr: 'SST',
+                offset: 13,
+                isdst: false,
+                text: '(UTC+13:00) Samoa',
+                utc: ['Pacific/Apia'],
+            },
+        ];
+        owner.languageList = [
+            'af',
+            'af-NA',
+            'af-ZA',
+            'agq',
+            'agq-CM',
+            'ak',
+            'ak-GH',
+            'am',
+            'am-ET',
+            'ar',
+            'ar-001',
+            'ar-AE',
+            'ar-BH',
+            'ar-DJ',
+            'ar-DZ',
+            'ar-EG',
+            'ar-EH',
+            'ar-ER',
+            'ar-IL',
+            'ar-IQ',
+            'ar-JO',
+            'ar-KM',
+            'ar-KW',
+            'ar-LB',
+            'ar-LY',
+            'ar-MA',
+            'ar-MR',
+            'ar-OM',
+            'ar-PS',
+            'ar-QA',
+            'ar-SA',
+            'ar-SD',
+            'ar-SO',
+            'ar-SS',
+            'ar-SY',
+            'ar-TD',
+            'ar-TN',
+            'ar-YE',
+            'as',
+            'as-IN',
+            'asa',
+            'asa-TZ',
+            'ast',
+            'ast-ES',
+            'az',
+            'az-Cyrl',
+            'az-Cyrl-AZ',
+            'az-Latn',
+            'az-Latn-AZ',
+            'bas',
+            'bas-CM',
+            'be',
+            'be-BY',
+            'bem',
+            'bem-ZM',
+            'bez',
+            'bez-TZ',
+            'bg',
+            'bg-BG',
+            'bm',
+            'bm-ML',
+            'bn',
+            'bn-BD',
+            'bn-IN',
+            'bo',
+            'bo-CN',
+            'bo-IN',
+            'br',
+            'br-FR',
+            'brx',
+            'brx-IN',
+            'bs',
+            'bs-Cyrl',
+            'bs-Cyrl-BA',
+            'bs-Latn',
+            'bs-Latn-BA',
+            'ca',
+            'ca-AD',
+            'ca-ES',
+            'ca-FR',
+            'ca-IT',
+            'ccp',
+            'ccp-BD',
+            'ccp-IN',
+            'ce',
+            'ce-RU',
+            'cgg',
+            'cgg-UG',
+            'chr',
+            'chr-US',
+            'ckb',
+            'ckb-IQ',
+            'ckb-IR',
+            'cs',
+            'cs-CZ',
+            'cy',
+            'cy-GB',
+            'da',
+            'da-DK',
+            'da-GL',
+            'dav',
+            'dav-KE',
+            'de',
+            'de-AT',
+            'de-BE',
+            'de-CH',
+            'de-DE',
+            'de-IT',
+            'de-LI',
+            'de-LU',
+            'dje',
+            'dje-NE',
+            'dsb',
+            'dsb-DE',
+            'dua',
+            'dua-CM',
+            'dyo',
+            'dyo-SN',
+            'dz',
+            'dz-BT',
+            'ebu',
+            'ebu-KE',
+            'ee',
+            'ee-GH',
+            'ee-TG',
+            'el',
+            'el-CY',
+            'el-GR',
+            'en',
+            'en-001',
+            'en-150',
+            'en-AG',
+            'en-AI',
+            'en-AS',
+            'en-AT',
+            'en-AU',
+            'en-BB',
+            'en-BE',
+            'en-BI',
+            'en-BM',
+            'en-BS',
+            'en-BW',
+            'en-BZ',
+            'en-CA',
+            'en-CC',
+            'en-CH',
+            'en-CK',
+            'en-CM',
+            'en-CX',
+            'en-CY',
+            'en-DE',
+            'en-DG',
+            'en-DK',
+            'en-DM',
+            'en-ER',
+            'en-FI',
+            'en-FJ',
+            'en-FK',
+            'en-FM',
+            'en-GB',
+            'en-GD',
+            'en-GG',
+            'en-GH',
+            'en-GI',
+            'en-GM',
+            'en-GU',
+            'en-GY',
+            'en-HK',
+            'en-IE',
+            'en-IL',
+            'en-IM',
+            'en-IN',
+            'en-IO',
+            'en-JE',
+            'en-JM',
+            'en-KE',
+            'en-KI',
+            'en-KN',
+            'en-KY',
+            'en-LC',
+            'en-LR',
+            'en-LS',
+            'en-MG',
+            'en-MH',
+            'en-MO',
+            'en-MP',
+            'en-MS',
+            'en-MT',
+            'en-MU',
+            'en-MW',
+            'en-MY',
+            'en-NA',
+            'en-NF',
+            'en-NG',
+            'en-NL',
+            'en-NR',
+            'en-NU',
+            'en-NZ',
+            'en-PG',
+            'en-PH',
+            'en-PK',
+            'en-PN',
+            'en-PR',
+            'en-PW',
+            'en-RW',
+            'en-SB',
+            'en-SC',
+            'en-SD',
+            'en-SE',
+            'en-SG',
+            'en-SH',
+            'en-SI',
+            'en-SL',
+            'en-SS',
+            'en-SX',
+            'en-SZ',
+            'en-TC',
+            'en-TK',
+            'en-TO',
+            'en-TT',
+            'en-TV',
+            'en-TZ',
+            'en-UG',
+            'en-UM',
+            'en-US',
+            'en-US-POSIX',
+            'en-VC',
+            'en-VG',
+            'en-VI',
+            'en-VU',
+            'en-WS',
+            'en-ZA',
+            'en-ZM',
+            'en-ZW',
+            'eo',
+            'es',
+            'es-419',
+            'es-AR',
+            'es-BO',
+            'es-BR',
+            'es-BZ',
+            'es-CL',
+            'es-CO',
+            'es-CR',
+            'es-CU',
+            'es-DO',
+            'es-EA',
+            'es-EC',
+            'es-ES',
+            'es-GQ',
+            'es-GT',
+            'es-HN',
+            'es-IC',
+            'es-MX',
+            'es-NI',
+            'es-PA',
+            'es-PE',
+            'es-PH',
+            'es-PR',
+            'es-PY',
+            'es-SV',
+            'es-US',
+            'es-UY',
+            'es-VE',
+            'et',
+            'et-EE',
+            'eu',
+            'eu-ES',
+            'ewo',
+            'ewo-CM',
+            'fa',
+            'fa-AF',
+            'fa-IR',
+            'ff',
+            'ff-CM',
+            'ff-GN',
+            'ff-MR',
+            'ff-SN',
+            'fi',
+            'fi-FI',
+            'fil',
+            'fil-PH',
+            'fo',
+            'fo-DK',
+            'fo-FO',
+            'fr',
+            'fr-BE',
+            'fr-BF',
+            'fr-BI',
+            'fr-BJ',
+            'fr-BL',
+            'fr-CA',
+            'fr-CD',
+            'fr-CF',
+            'fr-CG',
+            'fr-CH',
+            'fr-CI',
+            'fr-CM',
+            'fr-DJ',
+            'fr-DZ',
+            'fr-FR',
+            'fr-GA',
+            'fr-GF',
+            'fr-GN',
+            'fr-GP',
+            'fr-GQ',
+            'fr-HT',
+            'fr-KM',
+            'fr-LU',
+            'fr-MA',
+            'fr-MC',
+            'fr-MF',
+            'fr-MG',
+            'fr-ML',
+            'fr-MQ',
+            'fr-MR',
+            'fr-MU',
+            'fr-NC',
+            'fr-NE',
+            'fr-PF',
+            'fr-PM',
+            'fr-RE',
+            'fr-RW',
+            'fr-SC',
+            'fr-SN',
+            'fr-SY',
+            'fr-TD',
+            'fr-TG',
+            'fr-TN',
+            'fr-VU',
+            'fr-WF',
+            'fr-YT',
+            'fur',
+            'fur-IT',
+            'fy',
+            'fy-NL',
+            'ga',
+            'ga-IE',
+            'gd',
+            'gd-GB',
+            'gl',
+            'gl-ES',
+            'gsw',
+            'gsw-CH',
+            'gsw-FR',
+            'gsw-LI',
+            'gu',
+            'gu-IN',
+            'guz',
+            'guz-KE',
+            'gv',
+            'gv-IM',
+            'ha',
+            'ha-GH',
+            'ha-NE',
+            'ha-NG',
+            'haw',
+            'haw-US',
+            'he',
+            'he-IL',
+            'hi',
+            'hi-IN',
+            'hr',
+            'hr-BA',
+            'hr-HR',
+            'hsb',
+            'hsb-DE',
+            'hu',
+            'hu-HU',
+            'hy',
+            'hy-AM',
+            'id',
+            'id-ID',
+            'ig',
+            'ig-NG',
+            'ii',
+            'ii-CN',
+            'is',
+            'is-IS',
+            'it',
+            'it-CH',
+            'it-IT',
+            'it-SM',
+            'it-VA',
+            'ja',
+            'ja-JP',
+            'jgo',
+            'jgo-CM',
+            'jmc',
+            'jmc-TZ',
+            'ka',
+            'ka-GE',
+            'kab',
+            'kab-DZ',
+            'kam',
+            'kam-KE',
+            'kde',
+            'kde-TZ',
+            'kea',
+            'kea-CV',
+            'khq',
+            'khq-ML',
+            'ki',
+            'ki-KE',
+            'kk',
+            'kk-KZ',
+            'kkj',
+            'kkj-CM',
+            'kl',
+            'kl-GL',
+            'kln',
+            'kln-KE',
+            'km',
+            'km-KH',
+            'kn',
+            'kn-IN',
+            'ko',
+            'ko-KP',
+            'ko-KR',
+            'kok',
+            'kok-IN',
+            'ks',
+            'ks-IN',
+            'ksb',
+            'ksb-TZ',
+            'ksf',
+            'ksf-CM',
+            'ksh',
+            'ksh-DE',
+            'kw',
+            'kw-GB',
+            'ky',
+            'ky-KG',
+            'lag',
+            'lag-TZ',
+            'lb',
+            'lb-LU',
+            'lg',
+            'lg-UG',
+            'lkt',
+            'lkt-US',
+            'ln',
+            'ln-AO',
+            'ln-CD',
+            'ln-CF',
+            'ln-CG',
+            'lo',
+            'lo-LA',
+            'lrc',
+            'lrc-IQ',
+            'lrc-IR',
+            'lt',
+            'lt-LT',
+            'lu',
+            'lu-CD',
+            'luo',
+            'luo-KE',
+            'luy',
+            'luy-KE',
+            'lv',
+            'lv-LV',
+            'mas',
+            'mas-KE',
+            'mas-TZ',
+            'mer',
+            'mer-KE',
+            'mfe',
+            'mfe-MU',
+            'mg',
+            'mg-MG',
+            'mgh',
+            'mgh-MZ',
+            'mgo',
+            'mgo-CM',
+            'mk',
+            'mk-MK',
+            'ml',
+            'ml-IN',
+            'mn',
+            'mn-MN',
+            'mr',
+            'mr-IN',
+            'ms',
+            'ms-BN',
+            'ms-MY',
+            'ms-SG',
+            'mt',
+            'mt-MT',
+            'mua',
+            'mua-CM',
+            'my',
+            'my-MM',
+            'mzn',
+            'mzn-IR',
+            'naq',
+            'naq-NA',
+            'nb',
+            'nb-NO',
+            'nb-SJ',
+            'nd',
+            'nd-ZW',
+            'nds',
+            'nds-DE',
+            'nds-NL',
+            'ne',
+            'ne-IN',
+            'ne-NP',
+            'nl',
+            'nl-AW',
+            'nl-BE',
+            'nl-BQ',
+            'nl-CW',
+            'nl-NL',
+            'nl-SR',
+            'nl-SX',
+            'nmg',
+            'nmg-CM',
+            'nn',
+            'nn-NO',
+            'nnh',
+            'nnh-CM',
+            'nus',
+            'nus-SS',
+            'nyn',
+            'nyn-UG',
+            'om',
+            'om-ET',
+            'om-KE',
+            'or',
+            'or-IN',
+            'os',
+            'os-GE',
+            'os-RU',
+            'pa',
+            'pa-Arab',
+            'pa-Arab-PK',
+            'pa-Guru',
+            'pa-Guru-IN',
+            'pl',
+            'pl-PL',
+            'ps',
+            'ps-AF',
+            'pt',
+            'pt-AO',
+            'pt-BR',
+            'pt-CH',
+            'pt-CV',
+            'pt-GQ',
+            'pt-GW',
+            'pt-LU',
+            'pt-MO',
+            'pt-MZ',
+            'pt-PT',
+            'pt-ST',
+            'pt-TL',
+            'qu',
+            'qu-BO',
+            'qu-EC',
+            'qu-PE',
+            'rm',
+            'rm-CH',
+            'rn',
+            'rn-BI',
+            'ro',
+            'ro-MD',
+            'ro-RO',
+            'rof',
+            'rof-TZ',
+            'ru',
+            'ru-BY',
+            'ru-KG',
+            'ru-KZ',
+            'ru-MD',
+            'ru-RU',
+            'ru-UA',
+            'rw',
+            'rw-RW',
+            'rwk',
+            'rwk-TZ',
+            'sah',
+            'sah-RU',
+            'saq',
+            'saq-KE',
+            'sbp',
+            'sbp-TZ',
+            'se',
+            'se-FI',
+            'se-NO',
+            'se-SE',
+            'seh',
+            'seh-MZ',
+            'ses',
+            'ses-ML',
+            'sg',
+            'sg-CF',
+            'shi',
+            'shi-Latn',
+            'shi-Latn-MA',
+            'shi-Tfng',
+            'shi-Tfng-MA',
+            'si',
+            'si-LK',
+            'sk',
+            'sk-SK',
+            'sl',
+            'sl-SI',
+            'smn',
+            'smn-FI',
+            'sn',
+            'sn-ZW',
+            'so',
+            'so-DJ',
+            'so-ET',
+            'so-KE',
+            'so-SO',
+            'sq',
+            'sq-AL',
+            'sq-MK',
+            'sq-XK',
+            'sr',
+            'sr-Cyrl',
+            'sr-Cyrl-BA',
+            'sr-Cyrl-ME',
+            'sr-Cyrl-RS',
+            'sr-Cyrl-XK',
+            'sr-Latn',
+            'sr-Latn-BA',
+            'sr-Latn-ME',
+            'sr-Latn-RS',
+            'sr-Latn-XK',
+            'sv',
+            'sv-AX',
+            'sv-FI',
+            'sv-SE',
+            'sw',
+            'sw-CD',
+            'sw-KE',
+            'sw-TZ',
+            'sw-UG',
+            'ta',
+            'ta-IN',
+            'ta-LK',
+            'ta-MY',
+            'ta-SG',
+            'te',
+            'te-IN',
+            'teo',
+            'teo-KE',
+            'teo-UG',
+            'tg',
+            'tg-TJ',
+            'th',
+            'th-TH',
+            'ti',
+            'ti-ER',
+            'ti-ET',
+            'to',
+            'to-TO',
+            'tr',
+            'tr-CY',
+            'tr-TR',
+            'tt',
+            'tt-RU',
+            'twq',
+            'twq-NE',
+            'tzm',
+            'tzm-MA',
+            'ug',
+            'ug-CN',
+            'uk',
+            'uk-UA',
+            'ur',
+            'ur-IN',
+            'ur-PK',
+            'uz',
+            'uz-Arab',
+            'uz-Arab-AF',
+            'uz-Cyrl',
+            'uz-Cyrl-UZ',
+            'uz-Latn',
+            'uz-Latn-UZ',
+            'vai',
+            'vai-Latn',
+            'vai-Latn-LR',
+            'vai-Vaii',
+            'vai-Vaii-LR',
+            'vi',
+            'vi-VN',
+            'vun',
+            'vun-TZ',
+            'wae',
+            'wae-CH',
+            'wo',
+            'wo-SN',
+            'xog',
+            'xog-UG',
+            'yav',
+            'yav-CM',
+            'yi',
+            'yi-001',
+            'yo',
+            'yo-BJ',
+            'yo-NG',
+            'yue',
+            'yue-Hans',
+            'yue-Hans-CN',
+            'yue-Hant',
+            'yue-Hant-HK',
+            'zgh',
+            'zgh-MA',
+            'zh',
+            'zh-Hans',
+            'zh-Hans-CN',
+            'zh-Hans-HK',
+            'zh-Hans-MO',
+            'zh-Hans-SG',
+            'zh-Hant',
+            'zh-Hant-HK',
+            'zh-Hant-MO',
+            'zh-Hant-TW',
+            'zu',
+            'zu-ZA',
+        ];
+        owner.connectionTypeList = [
+            { name: 'wifi', value: 'wifi' },
+            { name: 'wifi', value: 'wifi' },
+            { name: 'ethernet', value: 'ethernet' },
+            { name: 'mixed', value: 'mixed' },
+            { name: 'bluetooth', value: 'bluetooth' },
+            { name: 'other', value: 'other' },
+            { name: 'unknown', value: 'unknown' },
+            { name: 'wimax', value: 'wimax' },
+            { name: 'cellular', value: 'cellular' },
+        ];
+        owner.userAgentDeviceList = [
+            {
+                name: 'PC',
+                platformList: [
+                    { name: 'Windows NT 6.1; WOW64', code: 'Win32' },
+                    { name: 'Windows NT 10.0; Win64; x64', code: 'Win32' },
+                    { name: 'Windows NT 11.0; Win64; x64', code: 'Win32' },
+                    { name: 'Windows NT 10.0', code: 'Win32' },
+                    { name: 'Windows NT 11.0', code: 'Win32' },
+                    { name: 'MacIntel', code: 'MacIntel' },
+                    { name: 'Macintosh; Intel Mac OS X 13_0', code: 'MacIntel' },
+                    { name: 'Macintosh; Intel Mac OS X 14_0', code: 'MacIntel' },
+                    { name: 'Macintosh; Intel Mac OS X 15_0', code: 'MacIntel' },
+                    { name: 'Macintosh; Intel Mac OS X 16_0', code: 'MacIntel' },
+                    { name: 'Linux x86_64', code: 'Linux x86_64' },
+                    { name: 'X11; Ubuntu; Linux x86_64', code: 'Linux x86_64' },
+                ],
+                screenList: ['2560*1440', '1920*1080', '1792*1120', '1680*1050', '1600*900', '1536*864', '1440*900', '1366*768', '1280*800', '1280*720', '1024*768', '1024*600'],
+            },
+            {
+                name: 'Mobile',
+                platformList: [
+                    { name: 'Linux; Android 11', code: 'Android' },
+                    { name: 'Linux; Android 12', code: 'Android' },
+                    { name: 'Linux; Android 13', code: 'Android' },
+                    { name: 'Linux; Android 14', code: 'Android' },
+                    { name: 'Linux; Android 15', code: 'Android' },
+                    { name: 'iPhone; CPU iPhone OS 13_0 like Mac OS X', code: 'iPhone' },
+                    { name: 'iPhone; CPU iPhone OS 14_0  like Mac OS X', code: 'iPhone' },
+                    { name: 'iPhone; CPU iPhone OS 15_0  like Mac OS X', code: 'iPhone' },
+                    { name: 'iPhone; CPU iPhone OS 16_0  like Mac OS X', code: 'iPhone' },
+                    { name: 'iPad; CPU OS 13_0  like Mac OS X', code: 'iPad' },
+                    { name: 'iPad; CPU OS 14_0  like Mac OS X', code: 'iPad' },
+                    { name: 'iPad; CPU OS 15_0  like Mac OS X', code: 'iPad' },
+                    { name: 'iPad; CPU OS 16_0  like Mac OS X', code: 'iPad' },
+                ],
+                screenList: ['601*962', '600*1024', '414*896', '390*844', '360*800', '360*640'],
+            },
+        ];
+
+        owner.userAgentBrowserList = [
+            {
+                name: 'Chrome',
+                vendor: 'Google Inc.',
+                prefix: '',
+                randomMajor: () => owner.randomNumber(146, 147),
+                randomMinor: () => owner.randomNumber(0, 0),
+                randomPatch: () => owner.randomNumber(0, 0),
+            },
+            {
+                name: 'Edge',
+                vendor: 'Google Inc.',
+                prefix: '',
+                randomMajor: () => owner.randomNumber(146, 147),
+                randomMinor: () => owner.randomNumber(0, 0),
+                randomPatch: () => owner.randomNumber(0, 0),
+            },
+            {
+                name: 'Firefox',
+                vendor: '',
+                prefix: '',
+                platform: 'Win32',
+                randomMajor: () => owner.randomNumber(146, 147),
+                randomMinor: () => owner.randomNumber(0, 9),
+                randomPatch: () => owner.randomNumber(0, 99),
+            },
+            {
+                name: 'Safari',
+                vendor: 'Apple Computer, Inc.',
+                prefix: '',
+                randomMajor: () => owner.randomNumber(600, 605),
+                randomMinor: () => owner.randomNumber(1, 15),
+                randomPatch: () => owner.randomNumber(10, 14),
+            },
+            {
+                name: 'Opera',
+                vendor: 'Google Inc.',
+                prefix: '',
+                randomMajor: () => owner.randomNumber(146, 147),
+                randomMinor: () => owner.randomNumber(0, 0),
+                randomPatch: () => owner.randomNumber(0, 0),
+            },
+        ];
+
+        owner.getRandomBrowser = function (deviceName = '*', browserName = '*', platformName = '*') {
+            let browser = owner.userAgentBrowserList.filter((d) => d.name.contains(browserName));
+            browser = browser[owner.randomNumber(0, browser.length - 1)] || owner.userAgentBrowserList[owner.randomNumber(0, owner.userAgentBrowserList.length - 1)];
+            browser = { ...browser };
+            browser.engine = { name: browser.name };
+
+            let devices = owner.userAgentDeviceList.filter((d) => d.name.contains(deviceName));
+            browser.device = devices[owner.randomNumber(0, devices.length - 1)] || owner.userAgentDeviceList[owner.randomNumber(0, owner.userAgentDeviceList.length - 1)];
+            browser.device = { ...browser.device };
+
+            browser.screen = browser.device.screenList[owner.randomNumber(0, browser.device.screenList.length - 1)];
+            browser.screen = browser.screen.split('*');
+            browser.screen = { width: parseInt(browser.screen[0]), height: parseInt(browser.screen[1]) };
+
+            browser.platformInfo = browser.device.platformList.filter((d) => d.name.contains(platformName));
+
+            browser.platformInfo =
+                browser.platformInfo[owner.randomNumber(0, browser.platformInfo.length - 1)] || browser.device.platformList[owner.randomNumber(0, browser.device.platformList.length - 1)];
+            if (browser.platform) {
+                browser.oscpu = browser.platform;
+            }
+
+            browser.platform = browser.platformInfo.code;
+
+            if (browser.device.name === 'Mobile') {
+                browser.prefix = 'Mobile';
+            }
+
+            browser.major = browser.randomMajor();
+            browser.minor = browser.randomMinor();
+            browser.patch = browser.randomPatch();
+
+            browser.randomMajor = undefined;
+            browser.randomMinor = undefined;
+            browser.randomPatch = undefined;
+
+            delete browser.randomMajor;
+            delete browser.randomMinor;
+            delete browser.randomPatch;
+            delete browser.device.platformList;
+            delete browser.device.screenList;
+
+            browser.name = browser.name + ' ' + browser.device.name + ' ' + browser.platform;
+
+            if (browser.name.contains('Safari')) {
+                browser.url = `Mozilla/5.0 (${browser.platformInfo.name}) AppleWebKit/${browser.major}.${browser.minor} (KHTML, like Gecko) Version/${browser.patch}.0 Safari/${browser.major}.${browser.minor}`;
+            } else if (browser.name.contains('Firefox')) {
+                browser.url = `Mozilla/5.0 (${browser.platformInfo.name}; rv:${browser.major}.${browser.minor}) Gecko/20100101 Firefox/${browser.major}.${browser.minor}`;
+            } else {
+                browser.url = `Mozilla/5.0 (${browser.platformInfo.name}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${browser.major}.${browser.minor}.${browser.patch}.0 ${browser.prefix} Safari/537.36`;
+            }
+
+            if (browser.name.contains('Edge')) {
+                browser.url += ` ${browser.name}/${browser.major}.${browser.minor}.${browser.patch}`;
+            }
+
+            return browser;
+        };
+
+        owner.getRandomUserAgent = function () {
+            return owner.getRandomBrowser().url;
+        };
+
+        owner.generateVPC = function (...args) {
+            let browser = owner.getRandomBrowser(...args);
+            return {
+                maskMemory: true,
+                memory_count: [2, 4, 8][owner.randomNumber(0, 2)],
+                maskCPU: true,
+                cpu_count: [2, 4, 8, 10, 12, 16][owner.randomNumber(0, 5)],
+                maskLang: true,
+                maskLocation: true,
+                location: {
+                    latitude: owner.randomNumber(1, 49) + Math.random(),
+                    longitude: owner.randomNumber(1, 49) + Math.random(),
+                },
+                languages:
+                    'en-US' +
+                    ',' +
+                    owner.languageList[owner.randomNumber(0, owner.languageList.length - 1)] +
+                    ';q=0.9,' +
+                    owner.languageList[owner.randomNumber(0, owner.languageList.length - 1)] +
+                    ';q=0.8',
+                maskTimeZone: false,
+                timeZone: owner.timeZones[owner.randomNumber(0, owner.timeZones.length - 1)],
+                maskWebGL: true,
+                hide_mimetypes: true,
+                hide_screen: true,
+                screen: {
+                    width: browser.screen.width,
+                    height: browser.screen.height,
+                    availWidth: browser.screen.width,
+                    availHeight: browser.screen.height - 30,
+                },
+                set_window_active: true,
+                set_tab_active: false,
+                blockRTC: true,
+                maskBattery: true,
+                maskCanvas: true,
+                maskAudio: true,
+                hide_media_devices: true,
+                maskPlugins: true,
+                hide_connection: true,
+                connection: {
+                    downlink: owner.randomNumber(1, 15) / 10,
+                    downlinkMax: owner.randomNumber(15, 30) / 10,
+                    effectiveType: owner.effectiveTypeList[owner.randomNumber(0, owner.effectiveTypeList.length - 1)],
+                    rtt: owner.randomNumber(300, 900),
+                    type: owner.connectionTypeList[owner.randomNumber(0, owner.connectionTypeList.length - 1)].name,
+                },
+                dnt: true,
+                maskUserAgentURL: false,
+                maskFonts: true,
+            };
+        };
+    }
+
+    if ((encode = true)) {
+        owner.encodeURI = (value) => {
+            try {
+                return encodeURI(value);
+            } catch (error) {
+                return value;
+            }
+        };
+        owner.decodeURI = (value) => {
+            try {
+                return decodeURI(value);
+            } catch (error) {
+                return value;
+            }
+        };
+
+        owner.decodeURIComponent = (value) => {
+            try {
+                return decodeURIComponent(value);
+            } catch (error) {
+                return value;
+            }
+        };
+        owner.encodeURIComponent = (value) => {
+            try {
+                return encodeURIComponent(value);
+            } catch (error) {
+                return value;
+            }
+        };
+    }
+
+    owner.handleProtocolRequest = async function (req) {
+
+        if (req.url.like('browser*')) {
+            let url = req.url.replace('browser://', 'http://127.0.0.1:60080/').replace('/?', '?');
+
+            if (url.like('*.social.js')) {
+                let filePath = owner.dir + '/browser_files' + owner.url.parse(url).pathname;
+                if (owner.fs.existsSync(filePath)) {
+                    let fileContent = owner.api.readFileSync(filePath);
+                    fileContent = owner.api.f1(fileContent);
+                    return new Response(fileContent, {
+                        headers: { 'content-type': 'application/javascript' },
+                    });
+                } else {
+                    return Response.error();
+                }
+            } else {
+                return owner.electron.net.fetch(url, {
+                    method: req.method,
+                    headers: req.headers,
+                    body: req.body,
+                    duplex: !req.method.like('get|head') ? 'half' : undefined,
+                });
+            }
+        } else {
+             return owner.electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
+        }
+    };
+};

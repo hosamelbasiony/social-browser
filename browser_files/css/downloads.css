@@ -1,0 +1,125 @@
+html,
+body {
+  background: #eee;
+}
+body {
+  margin: 20px;
+}
+
+.item {
+    padding: 20px;
+    border: 2px solid #03A9F4;
+    margin-top: 30px;
+    background: #ffffff;
+    border-radius: 5px;
+}
+
+.item:hover {
+  background-color: #ffeb3b;
+}
+
+.item-name {
+  color: #000000;
+  font-size: 18px;
+}
+.item-path {
+  color: #795548;
+  font-size: 14px;
+}
+.item-date {
+  background-color: #f7f7f7;
+  padding: 5px;
+  border-radius: 5px;
+  color: #030303;
+  font-size: 12px;
+  display: inline-block;
+  width: auto;
+  height: fit-content;
+}
+.item-url {
+  font-size: 10px;
+}
+.item-percent {
+  color: #0000ff;
+  font-weight: bold;
+}
+
+.item-actions {
+  float: right;
+  padding: 20px;
+}
+
+.item-progress-bar[value] {
+  -webkit-appearance: none;
+  height: 4px;
+}
+
+.item-progress-bar[value]::-webkit-progress-bar {
+  background-color: #ffffff;
+}
+
+.item-progress-bar[value]::-webkit-progress-value {
+  background-color: #00f70a;
+}
+
+.downloads .btn {
+  display: inline-block;
+  cursor: pointer;
+  padding: 7px 9px;
+  margin: 5px;
+  font-size: 14px;
+  background-color: #fff;
+  color: #030303;
+  border-radius: 5px;
+  border: 1px solid #bbb;
+  box-shadow: 1px 1px 8px 1px #bbb;
+  width: auto;
+}
+.downloads .btn:hover {
+  font-size: 16px;
+}
+
+progress {
+  width: 100%;
+}
+
+/* Social Browser premium dark downloads */
+html,
+body {
+  background: radial-gradient(circle at top left, rgba(33, 168, 255, 0.12), transparent 34%), #07111f;
+  color: #f6f9ff;
+}
+
+.item,
+.downloads .btn {
+  background: #0d1b2e;
+  color: #f6f9ff;
+  border-color: #244664;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+}
+
+.item:hover {
+  background: #12243a;
+}
+
+.item-name {
+  color: #f6f9ff;
+}
+
+.item-path,
+.item-date {
+  color: #b8c7d9;
+}
+
+.item-date,
+.item-progress-bar[value]::-webkit-progress-bar {
+  background: #0a1727;
+}
+
+.item-percent {
+  color: #21a8ff;
+}
+
+.item-progress-bar[value]::-webkit-progress-value {
+  background: #10d7c4;
+}

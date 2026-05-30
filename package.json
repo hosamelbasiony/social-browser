@@ -1,0 +1,22 @@
+{
+  "name": "social.browser",
+  "productName": "Social Browser",
+  "homepage": "https://social-browser.com",
+  "version": "26.05.27",
+  "description": "Browsing Social Platforms with Multiple Accounts without Ban",
+  "author": {
+    "name": "Social Teams",
+    "email": "social.browser.com@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/absunstar/social-browser.git"
+  },
+  "main": "main.js",
+  "dependencies": {
+    "isite": "^2026.4.5",
+    "puppeteer-core": "^24.35.0",
+    "xlsx": "^0.18.5"
+  }
+}

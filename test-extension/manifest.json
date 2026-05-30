@@ -1,0 +1,7 @@
+{
+  "id": "__TikTok",
+  "name": "TikTok Tool Manager",
+  "description": "Manage TikTok accounts, scrape data, and automate actions",
+  "version": "1.0.0",
+  "canDelete": false
+}

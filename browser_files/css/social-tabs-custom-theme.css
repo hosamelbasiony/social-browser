@@ -1,0 +1,238 @@
+:root {
+  --social-background-color: #272727;
+  --social-box-shadow: 1px 1px 2px 1px #000;
+  --social-current-tab-fill: #3f51b5;
+  --social-other-tab-fill: #9e9e9e;
+  --social-tab-color: #fff;
+  --social-address-background: #697de8;
+  --social-address-color: #ffffff;
+  transition: all 0.4s ease;
+}
+
+.browser-tabs {
+  margin: 0px;
+  box-sizing: border-box;
+  position: relative;
+  font-size: 10px;
+  height: 30px;
+  background: var(--social-background-color);
+  overflow: hidden;
+}
+
+.browser-tabs .social-tab.social-tab-current .social-tab-background > svg .social-tab-background {
+  fill: var(--social-current-tab-fill);
+}
+
+.browser-tabs .social-tab .social-tab-background > svg .social-tab-shadow {
+  fill: none;
+  stroke: #000;
+  stroke-width: 0.5px;
+}
+
+.browser-tabs .social-tab .social-tab-background > svg .social-tab-background {
+  fill: var(--social-other-tab-fill);
+  transform: translateX(0.25px) translateY(0.25px);
+}
+
+.browser-tabs .browser-tabs-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  left: 0;
+  width: 100%;
+  background: var(--social-current-tab-fill);
+  box-shadow: 0 -0.05em rgba(0, 0, 0, 0.27);
+  z-index: 20;
+}
+
+.browser-tabs .social-tab-title {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  color: var(--social-tab-color);
+  padding: 0 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  margin-top: 5px;
+  max-width: calc(100% - 70px);
+  pointer-events: none;
+}
+.browser-tabs .social-tab-title p {
+  margin: 0px;
+  padding: 0px;
+  width: 100%;
+}
+
+.social-address-bar {
+  height: 40px;
+  border-bottom: 1px solid #000;
+  background-color: var(--social-current-tab-fill);
+  box-shadow: 0 -0.05em rgba(0, 0, 0, 0.27);
+}
+
+#user_name {
+  -webkit-app-region: no-drag;
+  position: fixed;
+  right: 120px;
+  top: 3px;
+  font-family: monospace;
+  border-radius: 4px;
+  background-color: #030303;
+  padding: 3px 7px;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 12px;
+  z-index: 999999;
+}
+
+#user_name:hover {
+  transform: scale(1.1);
+}
+
+#setting {
+  float: right;
+  font-size: 22px !important;
+  margin: 0px;
+  padding: 0px !important;
+  padding-right: 20px !important;
+}
+
+.address-input {
+  vertical-align: bottom;
+  height: 24px;
+  color: #fff;
+  font-size: 14px;
+  font-family: monospace;
+  border: none;
+  margin: 2px;
+  margin-left: 10px;
+  width: 70%;
+  display: inline-block;
+  background: var(--social-address-background);
+  border-radius: 15px;
+  padding: 2px;
+  padding-left: 10px;
+  outline: none;
+}
+
+.address-input .url {
+    white-space: nowrap;
+}
+
+.address-input .browser {
+  vertical-align: -webkit-baseline-middle;
+  display: inline-block;
+  color: #FFEB3B;
+  font-weight: bold;
+  background: #272727;
+  box-shadow: 1px 1px 1px #000;
+  padding: 1px 7px;
+  border-radius: 3px;
+}
+.address-input .proxy {
+  vertical-align: -webkit-baseline-middle;
+  display: inline-block;
+  color: white;
+  background: #FF9800;
+  padding: 1px 7px;
+  font-weight: bold;
+  border-radius: 5px;
+}
+.address-input .https {
+  vertical-align: -webkit-baseline-middle;
+  display: inline-block;
+  color: white;
+  font-weight: bold;
+  background: green;
+  box-shadow: 1px 1px 1px #000;
+  padding: 1px 7px;
+}
+
+.address-input .http {
+  vertical-align: -webkit-baseline-middle;
+  display: inline-block;
+  color: white;
+  font-weight: bold;
+  background: #ff1200;
+  box-shadow: 1px 1px 1px #000;
+  padding: 1px 7px;
+}
+
+.address-input .ftp {
+  vertical-align: -webkit-baseline-middle;
+  display: inline-block;
+  color: white;
+  font-weight: bold;
+  background: green;
+  box-shadow: 1px 1px 1px #000;
+  padding: 1px 7px;
+}
+
+.address-input .ftps {
+  vertical-align: -webkit-baseline-middle;
+  display: inline-block;
+  color: white;
+  font-weight: bold;
+  background: green;
+  box-shadow: 1px 1px 1px #000;
+  padding: 1px 7px;
+}
+
+.address-input .file {
+  vertical-align: -webkit-baseline-middle;
+  display: inline-block;
+  color: white;
+  font-weight: bold;
+  background: green;
+  box-shadow: 1px 1px 1px #000;
+  padding: 1px 7px;
+}
+
+.address-input .protocol {
+  display: inline-block;
+}
+
+.address-input input {
+  background: var(--social-address-background);
+  color: var(--social-address-color);
+  line-height: 1.3;
+  height: 25px;
+  width: 70%;
+  font-size: 12px;
+  outline: none;
+  border: none;
+  margin: 0px;
+  padding: 0px;
+  padding-left: 10px;
+}
+
+.social-address-bar .address-input {
+  width: calc(100% - 600px);
+  min-width: 350px;
+}
+
+/* Social Browser premium dark social tabs */
+:root {
+  --icon-color: rgba(148, 183, 214, 0.72);
+  --social-background-color: #07111f;
+  --social-current-tab-fill: #12243a;
+  --social-other-tab-fill: #1e3453;
+  --social-other-tab-color: #b8c7d9;
+  --social-address-background: #0a1727;
+  --social-address-color: #f6f9ff;
+}
+
+#setting,
+.window-actions a,
+.social-address-bar a,
+.browser-tabs i,
+.browser-tabs svg {
+  color: var(--icon-color) !important;
+  text-shadow: 0 1px 10px rgba(33, 168, 255, 0.16);
+}
+
+.address-input {
+  box-shadow: inset 0 0 0 1px rgba(33, 168, 255, 0.2), 0 8px 24px rgba(0, 0, 0, 0.22);
+}

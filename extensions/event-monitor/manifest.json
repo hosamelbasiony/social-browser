@@ -1,0 +1,7 @@
+{
+  "id": "__EventMonitor",
+  "name": "Event Monitor",
+  "description": "Monitors target web pages for DOM changes and sends Telegram alerts",
+  "version": "1.0.0",
+  "canDelete": false
+}
